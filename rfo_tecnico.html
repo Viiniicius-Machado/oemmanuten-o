@@ -432,9 +432,6 @@
         <div class="chip-group" id="tipo-chips">
           <div class="chip" data-val="ROMPIMENTO">ROMPIMENTO</div>
           <div class="chip" data-val="MASSIVA">MASSIVA</div>
-          <div class="chip" data-val="ATENUAÇÃO">ATENUAÇÃO</div>
-          <div class="chip" data-val="ACOMPANHAMENTO">ACOMPANHAMENTO</div>
-          <div class="chip" data-val="RADIO">RADIO</div>
         </div>
       </div>
       <div class="divider"></div>
@@ -444,16 +441,7 @@
           <div style="font-size:.73rem;color:var(--text-muted);font-style:italic">Selecione o tipo de ocorrência primeiro...</div>
         </div>
       </div>
-      <div id="carga-alta-section">
-        <div class="divider"></div>
-        <div class="field">
-          <label style="color:var(--red)">Motivo da Carga Alta</label>
-          <div class="causa-list" id="motivo-carga">
-            <div class="causa-item" data-val="Apenas o cabo da Netturbo foi rompido"><div class="causa-dot"></div><span>Apenas o cabo da Netturbo foi rompido</span></div>
-            <div class="causa-item" data-val="Cabo da Netturbo + cabos de terceiros"><div class="causa-dot"></div><span>Cabo da Netturbo + cabos de terceiros</span></div>
-          </div>
-        </div>
-      </div>
+
       <div id="detalhes-divider" class="divider"></div>
       <div class="field" id="field-detalhes">
         <label id="lbl-detalhes">Detalhes do Defeito <span class="req-star" id="det-star">*</span></label>
@@ -532,12 +520,63 @@ window.gerarRelatorio=gerarRelatorio;
 // ── CONFIG ────────────────────────────────────────────────
 const SHEETS_URL='https://script.google.com/macros/s/AKfycbw3ZSOc2x1lBWGxEHDgukLzmbdy6gJdh8hVrqto8Fsb3LxC4YdMHfQINmv_avaWuhrC/exec';
 
-const configCausas={
-  ROMPIMENTO:['VANDALISMO','ACIDENTE','CARGA ALTA','PODA DE ARVORE','TROCA DE POSTE','DEGRADAÇÃO','INCENDIO','OBRAS NO LOCAL','ROMPIMENTO PARCEIRO','CPFL','EQUIPAMENTO POP'],
-  MASSIVA:   ['VANDALISMO','ACIDENTE','CARGA ALTA','PODA DE ARVORE','TROCA DE POSTE','DEGRADAÇÃO','INCENDIO','OBRAS NO LOCAL','ROMPIMENTO PARCEIRO','CPFL','EQUIPAMENTO POP'],
-  'ATENUAÇÃO':[],
-  ACOMPANHAMENTO:['Troca de Poste','Retração do cabo','Correção Fiberloop'],
-  RADIO:['Sintonização Antena','Troca de equipamento','Configuração']
+const configCausas = {
+  "ROMPIMENTO": [
+    "Rompimento Troca de Poste",
+    "Rompimento Carga Alta",
+    "Rompimento Vandalismo",
+    "Rompimento Acidente em Via",
+    "Rompimento Queimadas",
+    "Rompimento Parcial",
+    "Rompimento Descarga Elétrica",
+    "Rompimento Poda Árvore",
+    "Rompimento Subterrâneo",
+    "Degradação Rede Externa",
+    "Degradação Rede Externa (Atenuação)",
+    "Visita Cliente (Rompimento Interno)",
+    "Improdutiva Chamado Improcedente",
+    "Improdutiva Cliente",
+    "Improdutiva Clima / Fator Externo",
+    "Improdutiva Comercial",
+    "Improdutiva Delivery",
+    "Improdutiva Documentação (APR/NR)",
+    "Improdutiva Documentação (ART/DWG)",
+    "Improdutiva Infraestrutura (Rede)",
+    "Improdutiva Last Mile",
+    "Improdutiva Logística",
+    "Improdutiva NOC",
+    "Improdutiva OEM",
+    "Improdutiva Terceiro (DER/Cia Elétrica)",
+    "Improdutiva Validação"
+  ],
+  "MASSIVA": [
+    "Rompimento Troca de Poste",
+    "Rompimento Carga Alta",
+    "Rompimento Vandalismo",
+    "Rompimento Acidente em Via",
+    "Rompimento Queimadas",
+    "Rompimento Parcial",
+    "Rompimento Descarga Elétrica",
+    "Rompimento Poda Árvore",
+    "Rompimento Subterrâneo",
+    "Degradação Rede Externa",
+    "Degradação Rede Externa (Atenuação)",
+    "Visita Cliente (Rompimento Interno)",
+    "Improdutiva Chamado Improcedente",
+    "Improdutiva Cliente",
+    "Improdutiva Clima / Fator Externo",
+    "Improdutiva Comercial",
+    "Improdutiva Delivery",
+    "Improdutiva Documentação (APR/NR)",
+    "Improdutiva Documentação (ART/DWG)",
+    "Improdutiva Infraestrutura (Rede)",
+    "Improdutiva Last Mile",
+    "Improdutiva Logística",
+    "Improdutiva NOC",
+    "Improdutiva OEM",
+    "Improdutiva Terceiro (DER/Cia Elétrica)",
+    "Improdutiva Validação"
+  ]
 };
 
 // Materiais pré-definidos para ocorrências de fibra (não RADIO)
@@ -657,30 +696,19 @@ tipoChips.forEach(chip=>{
 });
 
 function renderCausas(){
-  causaCont.innerHTML='';cargaSec.classList.remove('visible');
+  causaCont.innerHTML='';
   const fieldDet=document.getElementById('field-detalhes');
   const divDet=document.getElementById('detalhes-divider');
-  const detStar=document.getElementById('det-star');
 
-  if(state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA'){
-    fieldDet.style.display='none';divDet.style.display='none';
-    document.getElementById('lbl-causa').style.display='block';
-  }else if(state.tipo==='ATENUAÇÃO'){
-    fieldDet.style.display='flex';divDet.style.display='block';detStar.style.display='inline';
-    document.getElementById('lbl-causa').style.display='none';
-    document.getElementById('lbl-detalhes').innerHTML='Detalhes do Defeito <span class="req-star">*</span>';
-    document.getElementById('obs-extras').placeholder='Descreva o defeito de atenuação...';
-    return;
-  }else{
-    fieldDet.style.display='flex';divDet.style.display='block';detStar.style.display='none';
-    document.getElementById('lbl-causa').style.display='block';
-    document.getElementById('lbl-detalhes').innerHTML='Detalhes / Observações';
-    document.getElementById('obs-extras').placeholder='Informações adicionais...';
-  }
+  // Hide detalhes for both types
+  fieldDet.style.display='none';
+  divDet.style.display='none';
+
   const lista=configCausas[state.tipo]||[];
   if(!lista.length)return;
+
   const wrap=document.createElement('div');
-  wrap.className=lista.length>3?'causa-grid':'causa-list';
+  wrap.className='causa-grid';
   lista.forEach(c=>{
     const item=document.createElement('div');
     item.className='causa-item'+(state.causa===c?' active':'');
@@ -688,13 +716,10 @@ function renderCausas(){
     item.onclick=()=>{
       Array.from(wrap.children).forEach(ch=>ch.classList.remove('active'));
       item.classList.add('active');state.causa=c;
-      if(c==='CARGA ALTA')cargaSec.classList.add('visible');
-      else{cargaSec.classList.remove('visible');state.carga='';document.querySelectorAll('#motivo-carga .causa-item').forEach(m=>m.classList.remove('active'));}
       saveLocal();
     };
     wrap.appendChild(item);
   });
-  if(state.causa==='CARGA ALTA')cargaSec.classList.add('visible');
   causaCont.appendChild(wrap);
 }
 
@@ -815,16 +840,16 @@ function loadLocal(){
 // ── RELATÓRIO ─────────────────────────────────────────────
 function gerarRelatorio(){
   if(!state.tipo){showToast('⚠️ Selecione o Tipo de Ocorrência!');return;}
-  if(state.tipo!=='ATENUAÇÃO'&&!state.causa){showToast('⚠️ Selecione a Causa!');return;}
-  if(state.causa==='CARGA ALTA'&&!state.carga){showToast('⚠️ Selecione o motivo da Carga Alta!');return;}
-  if(state.tipo==='ATENUAÇÃO'&&!document.getElementById('obs-extras').value.trim()){showToast('⚠️ Preencha os Detalhes do Defeito!');document.getElementById('obs-extras').focus();return;}
+  if(!state.causa){showToast('⚠️ Selecione a Causa!');return;}
+  
+  
   const v=id=>document.getElementById(id).value.trim();
   const dSlaV=document.getElementById('display-sla').innerText;
   const dCmpV=document.getElementById('display-campo').innerText;
   const gpsLink=document.getElementById('gps-coords').dataset.link||'';
   const hrTermino=state.modoAvancado?v('hr-termino-avancado'):v('hr-termino');
   let strMat='Não houve';
-  if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>m.n+': '+m.q);if(list.length)strMat=list.join(', ');}
+  if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>'• '+m.n+' - '+m.q+(m.unit||''));if(list.length)strMat='\\n'+list.join('\\n');}
   const payload={
     timestamp:new Date().toLocaleString('pt-BR'),
     empresa:v('empresa'),tecnico:v('tecnico'),data:v('data'),
@@ -832,7 +857,7 @@ function gerarRelatorio(){
     cliente:v('cliente'),local_defeito:v('local-defeito'),gps_coords:gpsLink,
     hr_inicio:v('hr-inicio'),hr_termino:hrTermino,sla_total:dSlaV,
     hr_chegada:v('hr-chegada'),tempo_campo:dCmpV,
-    ocorrencia:state.tipo,causa:state.tipo==='ATENUAÇÃO'?'ATENUAÇÃO':state.causa,
+    ocorrencia:state.tipo,causa:state.causa,
     carga_motivo:state.carga,obs_extras:v('obs-extras'),
     materiais:strMat,solucao:v('solucao'),melhoria:v('melhoria')
   };
