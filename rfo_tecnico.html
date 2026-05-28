@@ -432,6 +432,8 @@
         <div class="chip-group" id="tipo-chips">
           <div class="chip" data-val="ROMPIMENTO">ROMPIMENTO</div>
           <div class="chip" data-val="MASSIVA">MASSIVA</div>
+          <div class="chip" data-val="ACOMPANHAMENTO">ACOMPANHAMENTO</div>
+          <div class="chip" data-val="PREVENTIVA">PREVENTIVA</div>
         </div>
       </div>
       <div class="divider"></div>
@@ -576,7 +578,9 @@ const configCausas = {
     "Improdutiva OEM",
     "Improdutiva Terceiro (DER/Cia Elétrica)",
     "Improdutiva Validação"
-  ]
+  ],
+  "ACOMPANHAMENTO": [],
+  "PREVENTIVA": []
 };
 
 // Materiais pré-definidos para ocorrências de fibra (não RADIO)
@@ -699,13 +703,14 @@ function renderCausas(){
   causaCont.innerHTML='';
   const fieldDet=document.getElementById('field-detalhes');
   const divDet=document.getElementById('detalhes-divider');
-
-  // Hide detalhes for both types
   fieldDet.style.display='none';
   divDet.style.display='none';
 
   const lista=configCausas[state.tipo]||[];
-  if(!lista.length)return;
+  if(!lista.length){
+    causaCont.innerHTML='<div style="font-size:.75rem;color:var(--text-muted);font-style:italic;padding:.4rem">Nenhuma causa adicional para este tipo.</div>';
+    return;
+  }
 
   const wrap=document.createElement('div');
   wrap.className='causa-grid';
@@ -840,7 +845,7 @@ function loadLocal(){
 // ── RELATÓRIO ─────────────────────────────────────────────
 function gerarRelatorio(){
   if(!state.tipo){showToast('⚠️ Selecione o Tipo de Ocorrência!');return;}
-  if(!state.causa){showToast('⚠️ Selecione a Causa!');return;}
+  if(!state.causa&&state.tipo!=='ACOMPANHAMENTO'&&state.tipo!=='PREVENTIVA'){showToast('⚠️ Selecione a Causa!');return;}
   
   
   const v=id=>document.getElementById(id).value.trim();
