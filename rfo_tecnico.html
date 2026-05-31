@@ -475,8 +475,8 @@
   <section class="card">
     <div class="card-header"><div class="card-icon">✅</div><h2>Fechamento</h2></div>
     <div class="card-body">
-      <div class="field"><label>Solução Realizada</label><textarea id="solucao" placeholder="O que foi feito para resolver..."></textarea></div>
-      <div class="field"><label>Melhoria na Rede</label><textarea id="melhoria" placeholder="O que foi feito para melhorar..."></textarea></div>
+      <div class="field"><label>Solução Realizada <span style="color:var(--red)">*</span></label><textarea id="solucao" placeholder="O que foi feito para resolver..."></textarea></div>
+      <div class="field"><label>Melhoria na Rede <span style="color:var(--red)">*</span></label><textarea id="melhoria" placeholder="O que foi feito para melhorar..."></textarea></div>
     </div>
   </section>
 
@@ -706,9 +706,23 @@ function renderCausas(){
   fieldDet.style.display='none';
   divDet.style.display='none';
 
+  // ACOMPANHAMENTO e PREVENTIVA: campo de texto livre para causa
+  if(state.tipo==='ACOMPANHAMENTO'||state.tipo==='PREVENTIVA'){
+    const inp=document.createElement('input');
+    inp.type='text';
+    inp.placeholder='Descreva a causa / motivo...';
+    inp.value=state.causa||'';
+    inp.style.cssText='background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:Inter,sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s';
+    inp.oninput=function(){state.causa=this.value;saveLocal();};
+    inp.onfocus=function(){this.style.borderColor='var(--green)';this.style.boxShadow='0 0 0 3px var(--green-dim)';};
+    inp.onblur=function(){this.style.borderColor='';this.style.boxShadow='';};
+    causaCont.appendChild(inp);
+    return;
+  }
+
   const lista=configCausas[state.tipo]||[];
   if(!lista.length){
-    causaCont.innerHTML='<div style="font-size:.75rem;color:var(--text-muted);font-style:italic;padding:.4rem">Nenhuma causa adicional para este tipo.</div>';
+    causaCont.innerHTML='<div style="font-size:.75rem;color:var(--text-muted);font-style:italic;padding:.4rem">Selecione um tipo de ocorrência...</div>';
     return;
   }
 
@@ -846,15 +860,15 @@ function loadLocal(){
 function gerarRelatorio(){
   if(!state.tipo){showToast('⚠️ Selecione o Tipo de Ocorrência!');return;}
   if(!state.causa&&state.tipo!=='ACOMPANHAMENTO'&&state.tipo!=='PREVENTIVA'){showToast('⚠️ Selecione a Causa!');return;}
-  
-  
   const v=id=>document.getElementById(id).value.trim();
+  if(!v('solucao')){showToast('⚠️ Preencha a Solução Realizada!');document.getElementById('solucao').focus();return;}
+  if(!v('melhoria')){showToast('⚠️ Preencha a Melhoria na Rede!');document.getElementById('melhoria').focus();return;}
   const dSlaV=document.getElementById('display-sla').innerText;
   const dCmpV=document.getElementById('display-campo').innerText;
   const gpsLink=document.getElementById('gps-coords').dataset.link||'';
   const hrTermino=state.modoAvancado?v('hr-termino-avancado'):v('hr-termino');
   let strMat='Não houve';
-  if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>'• '+m.n+' - '+m.q+(m.unit||''));if(list.length)strMat='\\n'+list.join('\\n');}
+  if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>'• '+m.n+' - '+m.q);if(list.length)strMat=list.join('\n');}
   const payload={
     timestamp:new Date().toLocaleString('pt-BR'),
     empresa:v('empresa'),tecnico:v('tecnico'),data:v('data'),
@@ -878,7 +892,7 @@ function gerarRelatorio(){
   t+='*OCORRÊNCIA:* '+state.tipo+'\n';
   if(state.tipo!=='ATENUAÇÃO'){t+='*CAUSA PRINCIPAL:* '+state.causa+'\n';if(state.carga)t+='*MOTIVO CARGA ALTA:* '+state.carga+'\n';}
   if(v('obs-extras'))t+='*DETALHES:* '+v('obs-extras')+'\n';
-  t+='\n*MATERIAIS:* '+strMat+'\n\n*SOLUÇÃO:* '+v('solucao')+'\n*MELHORIA:* '+v('melhoria');
+  t+='\n*MATERIAIS:*\n'+strMat+'\n\n*SOLUÇÃO:*\n'+v('solucao')+'\n\n*MELHORIA NA REDE:*\n'+v('melhoria');
   const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);
   showToast('📋 Relatório copiado!');
   localStorage.removeItem('rfo_draft');
