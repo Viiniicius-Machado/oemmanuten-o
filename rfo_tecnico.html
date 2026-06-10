@@ -306,6 +306,52 @@
     .req-star{color:var(--red)}
     #field-detalhes{display:none}
     #detalhes-divider{display:none}
+    /* ── CEO CHECKBOXES ──────────────────────────────────── */
+    .ceo-options{display:flex;flex-direction:column;gap:.45rem}
+    .ceo-opt{
+      display:flex;align-items:center;gap:.75rem;
+      padding:.65rem .85rem;
+      background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);
+      cursor:pointer;transition:border-color .18s,background .18s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .ceo-opt.active{background:var(--green-dim);border-color:var(--green)}
+    .ceo-box{
+      width:22px;height:22px;border-radius:5px;border:2px solid var(--border-hi);
+      background:var(--surface);flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      transition:all .18s;
+    }
+    .ceo-opt.active .ceo-box{background:var(--green-dim);border-color:var(--green)}
+    .ceo-check{width:12px;height:10px;opacity:0;transition:opacity .18s}
+    .ceo-opt.active .ceo-check{opacity:1}
+    .ceo-label-text{display:flex;flex-direction:column;gap:.1rem}
+    .ceo-title{font-size:.82rem;color:var(--text);font-weight:600;line-height:1.2}
+    .ceo-opt.active .ceo-title{color:var(--green)}
+    .ceo-desc{font-size:.68rem;color:var(--text-muted);line-height:1.3}
+
+    .ceo-options{display:flex;flex-direction:column;gap:.45rem}
+    .ceo-opt{
+      display:flex;align-items:center;gap:.75rem;
+      padding:.65rem .85rem;
+      background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);
+      cursor:pointer;transition:border-color .18s,background .18s;
+      -webkit-tap-highlight-color:transparent;user-select:none;
+    }
+    .ceo-opt.active{background:var(--green-dim);border-color:var(--green)}
+    .ceo-box{
+      width:22px;height:22px;border-radius:5px;border:2px solid var(--border-hi);
+      background:var(--surface);flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      transition:all .18s;
+    }
+    .ceo-opt.active .ceo-box{background:var(--green-dim);border-color:var(--green);box-shadow:0 0 6px var(--green-glow)}
+    .ceo-check{width:12px;height:10px;opacity:0;transition:opacity .18s}
+    .ceo-opt.active .ceo-check{opacity:1}
+    .ceo-label-text{display:flex;flex-direction:column;gap:.1rem}
+    .ceo-title{font-size:.82rem;color:var(--text-dim);font-weight:600;line-height:1.2}
+    .ceo-opt.active .ceo-title{color:var(--green)}
+    .ceo-desc{font-size:.68rem;color:var(--text-muted);line-height:1.3}
     footer{max-width:640px;margin:1.5rem auto 0;padding:0 1rem;text-align:center;color:var(--text-muted);font-size:.62rem;letter-spacing:.08em}
   </style>
 </head>
@@ -432,8 +478,9 @@
         <div class="chip-group" id="tipo-chips">
           <div class="chip" data-val="ROMPIMENTO">ROMPIMENTO</div>
           <div class="chip" data-val="MASSIVA">MASSIVA</div>
+          <div class="chip" data-val="ATENUAÇÃO">ATENUAÇÃO</div>
           <div class="chip" data-val="ACOMPANHAMENTO">ACOMPANHAMENTO</div>
-          <div class="chip" data-val="PREVENTIVA">PREVENTIVA</div>
+          <div class="chip" data-val="RADIO">RADIO</div>
         </div>
       </div>
       <div class="divider"></div>
@@ -443,7 +490,16 @@
           <div style="font-size:.73rem;color:var(--text-muted);font-style:italic">Selecione o tipo de ocorrência primeiro...</div>
         </div>
       </div>
-
+      <div id="carga-alta-section">
+        <div class="divider"></div>
+        <div class="field">
+          <label style="color:var(--red)">Motivo da Carga Alta</label>
+          <div class="causa-list" id="motivo-carga">
+            <div class="causa-item" data-val="Apenas o cabo da Netturbo foi rompido"><div class="causa-dot"></div><span>Apenas o cabo da Netturbo foi rompido</span></div>
+            <div class="causa-item" data-val="Cabo da Netturbo + cabos de terceiros"><div class="causa-dot"></div><span>Cabo da Netturbo + cabos de terceiros</span></div>
+          </div>
+        </div>
+      </div>
       <div id="detalhes-divider" class="divider"></div>
       <div class="field" id="field-detalhes">
         <label id="lbl-detalhes">Detalhes do Defeito <span class="req-star" id="det-star">*</span></label>
@@ -476,6 +532,33 @@
     <div class="card-header"><div class="card-icon">✅</div><h2>Fechamento</h2></div>
     <div class="card-body">
       <div class="field"><label>Solução Realizada <span style="color:var(--red)">*</span></label><textarea id="solucao" placeholder="O que foi feito para resolver..."></textarea></div>
+
+      <div id="ceo-section" style="display:none">
+      <div class="field">
+        <label id="ceo-label">Tipo de CEO Utilizado <span style="color:var(--red)" id="ceo-star">*</span></label>
+        <div class="ceo-options">
+          <div class="ceo-opt" id="ceo-opt-nova" onclick="toggleCEO('nova')">
+            <div class="ceo-box" id="ceo-box-nova">
+              <svg class="ceo-check" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="ceo-label-text">
+              <span class="ceo-title">Caixa Nova → Nova</span>
+              <span class="ceo-desc">Adicionadas 2 caixas novas na rede</span>
+            </div>
+          </div>
+          <div class="ceo-opt" id="ceo-opt-existente" onclick="toggleCEO('existente')">
+            <div class="ceo-box" id="ceo-box-existente">
+              <svg class="ceo-check" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="ceo-label-text">
+              <span class="ceo-title">Caixa Nova → Existente</span>
+              <span class="ceo-desc">Adicionada 1 caixa nova para 1 caixa existente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /ceo-section -->
+
       <div class="field"><label>Melhoria na Rede <span style="color:var(--red)">*</span></label><textarea id="melhoria" placeholder="O que foi feito para melhorar..."></textarea></div>
     </div>
   </section>
@@ -520,67 +603,14 @@ window.updateMat=updateMat;
 window.gerarRelatorio=gerarRelatorio;
 
 // ── CONFIG ────────────────────────────────────────────────
-const SHEETS_URL='https://script.google.com/macros/s/AKfycbw3ZSOc2x1lBWGxEHDgukLzmbdy6gJdh8hVrqto8Fsb3LxC4YdMHfQINmv_avaWuhrC/exec';
+const SHEETS_URL='https://script.google.com/macros/s/AKfycbxP2JEmLznBdCECXigX_eOhWWUqbOYSu3xzR90JkTH6I0qGMHqmsTzXWynJoSjBO54D/exec';
 
-const configCausas = {
-  "ROMPIMENTO": [
-    "Rompimento Troca de Poste",
-    "Rompimento Carga Alta",
-    "Rompimento Vandalismo",
-    "Rompimento Acidente em Via",
-    "Rompimento Queimadas",
-    "Rompimento Parcial",
-    "Rompimento Descarga Elétrica",
-    "Rompimento Poda Árvore",
-    "Rompimento Subterrâneo",
-    "Degradação Rede Externa",
-    "Degradação Rede Externa (Atenuação)",
-    "Visita Cliente (Rompimento Interno)",
-    "Improdutiva Chamado Improcedente",
-    "Improdutiva Cliente",
-    "Improdutiva Clima / Fator Externo",
-    "Improdutiva Comercial",
-    "Improdutiva Delivery",
-    "Improdutiva Documentação (APR/NR)",
-    "Improdutiva Documentação (ART/DWG)",
-    "Improdutiva Infraestrutura (Rede)",
-    "Improdutiva Last Mile",
-    "Improdutiva Logística",
-    "Improdutiva NOC",
-    "Improdutiva OEM",
-    "Improdutiva Terceiro (DER/Cia Elétrica)",
-    "Improdutiva Validação"
-  ],
-  "MASSIVA": [
-    "Rompimento Troca de Poste",
-    "Rompimento Carga Alta",
-    "Rompimento Vandalismo",
-    "Rompimento Acidente em Via",
-    "Rompimento Queimadas",
-    "Rompimento Parcial",
-    "Rompimento Descarga Elétrica",
-    "Rompimento Poda Árvore",
-    "Rompimento Subterrâneo",
-    "Degradação Rede Externa",
-    "Degradação Rede Externa (Atenuação)",
-    "Visita Cliente (Rompimento Interno)",
-    "Improdutiva Chamado Improcedente",
-    "Improdutiva Cliente",
-    "Improdutiva Clima / Fator Externo",
-    "Improdutiva Comercial",
-    "Improdutiva Delivery",
-    "Improdutiva Documentação (APR/NR)",
-    "Improdutiva Documentação (ART/DWG)",
-    "Improdutiva Infraestrutura (Rede)",
-    "Improdutiva Last Mile",
-    "Improdutiva Logística",
-    "Improdutiva NOC",
-    "Improdutiva OEM",
-    "Improdutiva Terceiro (DER/Cia Elétrica)",
-    "Improdutiva Validação"
-  ],
-  "ACOMPANHAMENTO": [],
-  "PREVENTIVA": []
+const configCausas={
+  ROMPIMENTO:['VANDALISMO','ACIDENTE','CARGA ALTA','PODA DE ARVORE','TROCA DE POSTE','DEGRADAÇÃO','INCENDIO','OBRAS NO LOCAL','ROMPIMENTO PARCEIRO','CPFL','EQUIPAMENTO POP'],
+  MASSIVA:   ['VANDALISMO','ACIDENTE','CARGA ALTA','PODA DE ARVORE','TROCA DE POSTE','DEGRADAÇÃO','INCENDIO','OBRAS NO LOCAL','ROMPIMENTO PARCEIRO','CPFL','EQUIPAMENTO POP'],
+  'ATENUAÇÃO':[],
+  ACOMPANHAMENTO:['Troca de Poste','Retração do cabo','Correção Fiberloop'],
+  RADIO:['Sintonização Antena','Troca de equipamento','Configuração']
 };
 
 // Materiais pré-definidos para ocorrências de fibra (não RADIO)
@@ -700,34 +730,30 @@ tipoChips.forEach(chip=>{
 });
 
 function renderCausas(){
-  causaCont.innerHTML='';
+  causaCont.innerHTML='';cargaSec.classList.remove('visible');
   const fieldDet=document.getElementById('field-detalhes');
   const divDet=document.getElementById('detalhes-divider');
-  fieldDet.style.display='none';
-  divDet.style.display='none';
+  const detStar=document.getElementById('det-star');
 
-  // ACOMPANHAMENTO e PREVENTIVA: campo de texto livre para causa
-  if(state.tipo==='ACOMPANHAMENTO'||state.tipo==='PREVENTIVA'){
-    const inp=document.createElement('input');
-    inp.type='text';
-    inp.placeholder='Descreva a causa / motivo...';
-    inp.value=state.causa||'';
-    inp.style.cssText='background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:Inter,sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s';
-    inp.oninput=function(){state.causa=this.value;saveLocal();};
-    inp.onfocus=function(){this.style.borderColor='var(--green)';this.style.boxShadow='0 0 0 3px var(--green-dim)';};
-    inp.onblur=function(){this.style.borderColor='';this.style.boxShadow='';};
-    causaCont.appendChild(inp);
+  if(state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA'){
+    fieldDet.style.display='none';divDet.style.display='none';
+    document.getElementById('lbl-causa').style.display='block';
+  }else if(state.tipo==='ATENUAÇÃO'){
+    fieldDet.style.display='flex';divDet.style.display='block';detStar.style.display='inline';
+    document.getElementById('lbl-causa').style.display='none';
+    document.getElementById('lbl-detalhes').innerHTML='Detalhes do Defeito <span class="req-star">*</span>';
+    document.getElementById('obs-extras').placeholder='Descreva o defeito de atenuação...';
     return;
+  }else{
+    fieldDet.style.display='flex';divDet.style.display='block';detStar.style.display='none';
+    document.getElementById('lbl-causa').style.display='block';
+    document.getElementById('lbl-detalhes').innerHTML='Detalhes / Observações';
+    document.getElementById('obs-extras').placeholder='Informações adicionais...';
   }
-
   const lista=configCausas[state.tipo]||[];
-  if(!lista.length){
-    causaCont.innerHTML='<div style="font-size:.75rem;color:var(--text-muted);font-style:italic;padding:.4rem">Selecione um tipo de ocorrência...</div>';
-    return;
-  }
-
+  if(!lista.length)return;
   const wrap=document.createElement('div');
-  wrap.className='causa-grid';
+  wrap.className=lista.length>3?'causa-grid':'causa-list';
   lista.forEach(c=>{
     const item=document.createElement('div');
     item.className='causa-item'+(state.causa===c?' active':'');
@@ -735,10 +761,13 @@ function renderCausas(){
     item.onclick=()=>{
       Array.from(wrap.children).forEach(ch=>ch.classList.remove('active'));
       item.classList.add('active');state.causa=c;
+      if(c==='CARGA ALTA')cargaSec.classList.add('visible');
+      else{cargaSec.classList.remove('visible');state.carga='';document.querySelectorAll('#motivo-carga .causa-item').forEach(m=>m.classList.remove('active'));}
       saveLocal();
     };
     wrap.appendChild(item);
   });
+  if(state.causa==='CARGA ALTA')cargaSec.classList.add('visible');
   causaCont.appendChild(wrap);
 }
 
@@ -837,7 +866,7 @@ function capturarGPS(){
 const INPUTS=['empresa','tecnico','data','protocolo','cidade','id-etiqueta','cliente','local-defeito','hr-inicio','hr-termino','hr-chegada','obs-extras','solucao','melhoria','hr-termino-avancado'];
 INPUTS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',saveLocal);});
 function saveLocal(){
-  const data={state,gps:document.getElementById('gps-coords').dataset.link||''};
+  const data={state,ceo:state_ceo,gps:document.getElementById('gps-coords').dataset.link||''};
   INPUTS.forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
   localStorage.setItem('rfo_draft',JSON.stringify(data));
 }
@@ -852,16 +881,52 @@ function loadLocal(){
     if(state.tipo){tipoChips.forEach(c=>{if(c.dataset.val===state.tipo)c.classList.add('active');});renderCausas();if(state.tipo==='MASSIVA')document.getElementById('btn-toggle-avancado').classList.add('visible');}
     if(state.carga)document.querySelectorAll('#motivo-carga .causa-item').forEach(m=>{if(m.dataset.val===state.carga)m.classList.add('active');});
     if(state.usaMat!==null){setMaterial(state.usaMat);if(state.usaMat)renderMateriais();}
+    if(draft.ceo){
+      state_ceo=draft.ceo;
+      const el=document.getElementById('ceo-opt-'+state_ceo);
+      if(el)el.classList.add('active');
+    }
+    atualizarCEOVisibilidade();
+    if(typeof draft.ceo !== 'undefined' && draft.ceo){
+      state_ceo = draft.ceo;
+      if(state_ceo) document.getElementById('ceo-opt-'+state_ceo)?.classList.add('active');
+    }
     if(state.modoAvancado){document.getElementById('hr-avancado-row').classList.add('visible');document.getElementById('hr-termino').disabled=true;document.getElementById('hr-termino').style.opacity='.4';}
   }
 }
 
 // ── RELATÓRIO ─────────────────────────────────────────────
+// ── CEO TIPO ──────────────────────────────────────────────────
+let state_ceo = '';
+function atualizarCEOVisibilidade(){
+  const sec  = document.getElementById('ceo-section');
+  const star = document.getElementById('ceo-star');
+  const isFibra = state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA';
+  sec.style.display = isFibra ? 'block' : 'none';
+  // Se ocultar, limpa seleção e torna não obrigatório
+  if(!isFibra){
+    state_ceo='';
+    document.getElementById('ceo-opt-nova').classList.remove('active');
+    document.getElementById('ceo-opt-existente').classList.remove('active');
+  }
+}
+
+window.toggleCEO = function(tipo){
+  state_ceo = (state_ceo === tipo) ? '' : tipo;
+  document.getElementById('ceo-opt-nova').classList.toggle('active', state_ceo==='nova');
+  document.getElementById('ceo-opt-existente').classList.toggle('active', state_ceo==='existente');
+  saveLocal();
+};
+
 function gerarRelatorio(){
   if(!state.tipo){showToast('⚠️ Selecione o Tipo de Ocorrência!');return;}
-  if(!state.causa&&state.tipo!=='ACOMPANHAMENTO'&&state.tipo!=='PREVENTIVA'){showToast('⚠️ Selecione a Causa!');return;}
+  if(state.tipo!=='ATENUAÇÃO'&&!state.causa){showToast('⚠️ Selecione a Causa!');return;}
+  if(state.causa==='CARGA ALTA'&&!state.carga){showToast('⚠️ Selecione o motivo da Carga Alta!');return;}
+  if(state.tipo==='ATENUAÇÃO'&&!document.getElementById('obs-extras').value.trim()){showToast('⚠️ Preencha os Detalhes do Defeito!');document.getElementById('obs-extras').focus();return;}
   const v=id=>document.getElementById(id).value.trim();
   if(!v('solucao')){showToast('⚠️ Preencha a Solução Realizada!');document.getElementById('solucao').focus();return;}
+  const isFibraCEO=state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA';
+  if(isFibraCEO&&!state_ceo){showToast('⚠️ Selecione o Tipo de CEO!');document.getElementById('ceo-section').scrollIntoView({behavior:'smooth',block:'center'});return;}
   if(!v('melhoria')){showToast('⚠️ Preencha a Melhoria na Rede!');document.getElementById('melhoria').focus();return;}
   const dSlaV=document.getElementById('display-sla').innerText;
   const dCmpV=document.getElementById('display-campo').innerText;
@@ -876,7 +941,7 @@ function gerarRelatorio(){
     cliente:v('cliente'),local_defeito:v('local-defeito'),gps_coords:gpsLink,
     hr_inicio:v('hr-inicio'),hr_termino:hrTermino,sla_total:dSlaV,
     hr_chegada:v('hr-chegada'),tempo_campo:dCmpV,
-    ocorrencia:state.tipo,causa:state.causa,
+    ocorrencia:state.tipo,causa:state.tipo==='ATENUAÇÃO'?'ATENUAÇÃO':state.causa,
     carga_motivo:state.carga,obs_extras:v('obs-extras'),
     materiais:strMat,solucao:v('solucao'),melhoria:v('melhoria')
   };
@@ -892,7 +957,8 @@ function gerarRelatorio(){
   t+='*OCORRÊNCIA:* '+state.tipo+'\n';
   if(state.tipo!=='ATENUAÇÃO'){t+='*CAUSA PRINCIPAL:* '+state.causa+'\n';if(state.carga)t+='*MOTIVO CARGA ALTA:* '+state.carga+'\n';}
   if(v('obs-extras'))t+='*DETALHES:* '+v('obs-extras')+'\n';
-  t+='\n*MATERIAIS:*\n'+strMat+'\n\n*SOLUÇÃO:*\n'+v('solucao')+'\n\n*MELHORIA NA REDE:*\n'+v('melhoria');
+  const ceoLabel=state_ceo==='nova'?'☑ Caixa Nova → Nova (2 novas)':state_ceo==='existente'?'☑ Caixa Nova → Existente':'';
+  t+='\n*MATERIAIS:*\n'+strMat+'\n\n*SOLUÇÃO:*\n'+v('solucao')+(ceoLabel?'\n*CEO:* '+ceoLabel:'')+'\n\n*MELHORIA NA REDE:*\n'+v('melhoria');
   const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);
   showToast('📋 Relatório copiado!');
   localStorage.removeItem('rfo_draft');

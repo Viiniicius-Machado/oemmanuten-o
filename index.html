@@ -15,16 +15,12 @@ body{background:#080808;color:#e8e8e8;font-family:Inter,sans-serif;min-height:10
 .subtitle{font-size:.68rem;color:#505050;letter-spacing:.2em;text-transform:uppercase;text-align:center;margin-top:-.6rem}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%;max-width:500px}
 @media(max-width:420px){.cards{grid-template-columns:1fr}}
-.card{background:#111;border-radius:14px;padding:1.8rem 1.2rem;display:flex;flex-direction:column;align-items:center;gap:.8rem;text-align:center;text-decoration:none;transition:transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.card{background:#111;border-radius:14px;padding:1.8rem 1.2rem;display:flex;flex-direction:column;align-items:center;gap:.8rem;text-align:center;text-decoration:none;transition:transform .2s;-webkit-tap-highlight-color:transparent}
 .card:active{transform:scale(.97)}
-.card.tecnico{border:1px solid #1e2e12}
-.card.tecnico:hover{box-shadow:0 8px 30px rgba(139,195,74,.12)}
-.card.lider{border:1px solid #1e1a08}
-.card.lider:hover{box-shadow:0 8px 30px rgba(212,168,67,.12)}
+.card.tecnico{border:1px solid #1e2e12}.card.lider{border:1px solid #1e1a08}
 .card-icon{font-size:2.4rem}
 .card-title{font-family:Rajdhani,sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.card.tecnico .card-title{color:#8bc34a}
-.card.lider .card-title{color:#d4a843}
+.card.tecnico .card-title{color:#8bc34a}.card.lider .card-title{color:#d4a843}
 .card-desc{font-size:.68rem;color:#505050;line-height:1.5}
 .card-badge{font-size:.58rem;font-weight:700;letter-spacing:.1em;padding:.22rem .6rem;border-radius:20px}
 .card.tecnico .card-badge{background:rgba(139,195,74,.1);color:#8bc34a;border:1px solid rgba(139,195,74,.2)}
@@ -34,23 +30,10 @@ footer{font-size:.6rem;color:#282828;letter-spacing:.1em}
 </head>
 <body>
 <div class="logo-wrap"><img src="./logo.png" alt="Netturbo"/></div>
-<div>
-  <div class="title">Netturbo</div>
-  <div class="subtitle">Sistema de Relatórios · O&amp;M</div>
-</div>
+<div><div class="title">Netturbo</div><div class="subtitle">Sistema de Relatórios · O&amp;M</div></div>
 <div class="cards">
-  <a class="card tecnico" href="rfo_tecnico.html">
-    <div class="card-icon">🔧</div>
-    <div class="card-title">RFO Técnico</div>
-    <div class="card-desc">Relatório de manutenção para técnicos de campo</div>
-    <div class="card-badge">Equipe Técnica</div>
-  </a>
-  <a class="card lider" href="fiscal_v2.html">
-    <div class="card-icon">💻</div>
-    <div class="card-title">Fiscalização</div>
-    <div class="card-desc">Relatório fotográfico e auditoria para liderança</div>
-    <div class="card-badge">🔒 Liderança</div>
-  </a>
+  <a class="card tecnico" href="rfo_tecnico.html"><div class="card-icon">🔧</div><div class="card-title">RFO Técnico</div><div class="card-desc">Relatório de manutenção para técnicos de campo</div><div class="card-badge">Equipe Técnica</div></a>
+  <a class="card lider" href="fiscal_v2.html"><div class="card-icon">💻</div><div class="card-title">Fiscalização</div><div class="card-desc">Relatório fotográfico e auditoria para liderança</div><div class="card-badge">🔒 Liderança</div></a>
 </div>
 <footer>Netturbo O&amp;M © 2026</footer>
 </body>
