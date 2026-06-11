@@ -324,6 +324,15 @@
                 <span class="ceo-desc">Adicionada 1 caixa nova para 1 caixa existente</span>
               </div>
             </div>
+            <div class="ceo-opt" id="ceo-opt-existente-existente" onclick="toggleCEO('existente-existente')">
+              <div class="ceo-box">
+                <svg class="ceo-check" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="ceo-label-text">
+                <span class="ceo-title">Caixa Existente → Existente</span>
+                <span class="ceo-desc">Cabo lançado entre 2 caixas já existentes na rede</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -524,12 +533,14 @@ function atualizarCEO(){
     state_ceo='';
     document.getElementById('ceo-opt-nova').classList.remove('active');
     document.getElementById('ceo-opt-existente').classList.remove('active');
+    document.getElementById('ceo-opt-existente-existente').classList.remove('active');
   }
 }
 window.toggleCEO=function(tipo){
   state_ceo=(state_ceo===tipo)?'':tipo;
   document.getElementById('ceo-opt-nova').classList.toggle('active',state_ceo==='nova');
   document.getElementById('ceo-opt-existente').classList.toggle('active',state_ceo==='existente');
+  document.getElementById('ceo-opt-existente-existente').classList.toggle('active',state_ceo==='existente-existente');
   saveLocal();
 };
 
@@ -597,7 +608,7 @@ function loadLocal(){
     if(state.usaMat!==null){setMaterial(state.usaMat);if(state.usaMat)renderMateriais();}
     if(state.modoAvancado){document.getElementById('hr-avancado-row').classList.add('visible');document.getElementById('hr-termino').disabled=true;document.getElementById('hr-termino').style.opacity='.4';}
   }
-  if(draft.ceo){state_ceo=draft.ceo;const el=document.getElementById('ceo-opt-'+state_ceo);if(el)el.classList.add('active');}
+  if(draft.ceo){state_ceo=draft.ceo;const elId='ceo-opt-'+state_ceo;const el=document.getElementById(elId);if(el)el.classList.add('active');}
 }
 
 // ── RELATÓRIO ──────────────────────────────────────────────────
@@ -618,7 +629,7 @@ function gerarRelatorio(){
   let strMat='Não houve';
   if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>'• '+m.n+' - '+m.q);if(list.length)strMat=list.join('\n');}
 
-  const ceoLabel=state_ceo==='nova'?'☑ Caixa Nova → Nova (2 novas)':state_ceo==='existente'?'☑ Caixa Nova → Existente':'';
+  const ceoLabel=state_ceo==='nova'?'☑ Caixa Nova → Nova (2 novas)':state_ceo==='existente'?'☑ Caixa Nova → Existente':state_ceo==='existente-existente'?'☑ Caixa Existente → Existente':'';
 
   const payload={
     timestamp:new Date().toLocaleString('pt-BR'),
