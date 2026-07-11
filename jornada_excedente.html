@@ -98,6 +98,9 @@
     .sig-date-input{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.82rem;padding:.45rem .65rem;width:100%;-webkit-appearance:none}
     .sig-date-input:focus{outline:none;border-color:var(--gold)}
     .sig-role{font-size:.68rem;font-weight:700;color:var(--text-dim);text-align:center;letter-spacing:.06em;text-transform:uppercase;margin-top:.15rem}
+    .sig-name-input{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.82rem;padding:.42rem .65rem;width:100%;text-align:center;transition:border-color .2s,box-shadow .2s}
+    .sig-name-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.1)}
+    .sig-name-input::placeholder{color:var(--text-muted);font-size:.75rem}
 
     /* BOTÕES */
     .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:1rem}
@@ -198,20 +201,23 @@
       <div class="sig-grid">
         <div class="sig-block">
           <label>Líder Imediato</label>
+          <input type="text" class="sig-name-input" id="nome-lider" placeholder="Digite o nome por extenso..."/>
           <div class="sig-wrap"><canvas class="sig-canvas" id="sig-lider"></canvas><button class="sig-clear" onclick="limparSig('sig-lider')">Limpar</button></div>
           <div class="sig-hint">Assine acima</div>
           <input type="date" class="sig-date-input" id="data-lider"/>
           <div class="sig-role">Líder Imediato</div>
         </div>
         <div class="sig-block">
-          <label>Gestor da Área</label>
-          <div class="sig-wrap"><canvas class="sig-canvas" id="sig-gestor"></canvas><button class="sig-clear" onclick="limparSig('sig-gestor')">Limpar</button></div>
+          <label>Colaborador</label>
+          <input type="text" class="sig-name-input" id="nome-colaborador" placeholder="Digite o nome por extenso..."/>
+          <div class="sig-wrap"><canvas class="sig-canvas" id="sig-colaborador"></canvas><button class="sig-clear" onclick="limparSig('sig-colaborador')">Limpar</button></div>
           <div class="sig-hint">Assine acima</div>
-          <input type="date" class="sig-date-input" id="data-gestor"/>
-          <div class="sig-role">Gestor da Área</div>
+          <input type="date" class="sig-date-input" id="data-colaborador"/>
+          <div class="sig-role">Colaborador</div>
         </div>
         <div class="sig-block">
           <label>Recursos Humanos</label>
+          <input type="text" class="sig-name-input" id="nome-rh" placeholder="Digite o nome por extenso..."/>
           <div class="sig-wrap"><canvas class="sig-canvas" id="sig-rh"></canvas><button class="sig-clear" onclick="limparSig('sig-rh')">Limpar</button></div>
           <div class="sig-hint">Assine acima</div>
           <input type="date" class="sig-date-input" id="data-rh"/>
@@ -315,7 +321,7 @@ window.gerarPDF=async function(){
       <td style="padding:5px 8px;border:1px solid #e0e0e0;font-size:10px">${r.motivo||''}</td>
     </tr>`).join('');
 
-  const [sLider,sGestor,sRH]=['sig-lider','sig-gestor','sig-rh'].map(getSig);
+  const [sLider,sGestor,sRH]=['sig-lider','sig-colaborador','sig-rh'].map(getSig);
 
   container.innerHTML=`
   <div style="width:${PDF_W}px;min-height:1122px;padding:45px 55px 60px;background:#fff;font-family:Arial,sans-serif;color:#111;position:relative">
@@ -380,7 +386,7 @@ window.gerarPDF=async function(){
     <div>
       <div style="font-size:8px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8bc34a;border-bottom:1px solid #e8e8e8;padding-bottom:4px;margin-bottom:14px">PARECER E ASSINATURAS</div>
       <div style="display:flex;gap:24px">
-        ${[{id:sLider,role:'Líder Imediato',data:v('data-lider')},{id:sGestor,role:'Gestor da Área',data:v('data-gestor')},{id:sRH,role:'Recursos Humanos',data:v('data-rh')}].map(s=>`
+        ${[{id:sLider,role:'Líder Imediato',data:v('data-lider')},{id:sGestor,role:'Colaborador',data:v('data-colaborador')},{id:sRH,role:'Recursos Humanos',data:v('data-rh')}].map(s=>`
         <div style="flex:1;text-align:center">
           <div style="height:68px;border:1px solid #ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:5px;background:#fafafa">
             ${s.id?`<img src="${s.id}" style="max-height:60px;max-width:100%;object-fit:contain"/>`:'' }
@@ -425,9 +431,9 @@ window.gerarPDF=async function(){
 // ── LIMPAR ──────────────────────────────────────────────────────
 window.limparTudo=function(){
   if(!confirm('Limpar todos os campos?'))return;
-  ['colaborador','lider','mes-ref','total-horas','justificativa','plano-acao','data-lider','data-gestor','data-rh'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['colaborador','lider','mes-ref','total-horas','justificativa','plano-acao','data-lider','data-colaborador','data-rh'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   excRows=[];renderExc();
-  ['sig-lider','sig-gestor','sig-rh'].forEach(limparSig);
+  ['sig-lider','sig-colaborador','sig-rh'].forEach(limparSig);
   inicializar();
   showToast('🗑️ Formulário limpo!');
 };
@@ -436,7 +442,7 @@ let toastTimer;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3200);}
 
 function inicializar(){
-  ['sig-lider','sig-gestor','sig-rh'].forEach(initSig);
+  ['sig-lider','sig-colaborador','sig-rh'].forEach(initSig);
   if(excRows.length===0) for(let i=0;i<7;i++) addExcRow();
   const hoje=new Date().toISOString().split('T')[0];
   document.getElementById('data-lider').value=hoje;
