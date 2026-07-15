@@ -295,24 +295,19 @@ async function carregarPendentes(){
   listEl.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando RFOs pendentes...</div>';
 
   try{
-    const resp = await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({aba:'LISTAR_PENDENTES'})
-    });
+    // GET request para listar pendentes (Apps Script suporta CORS no doGet)
+    const url = SHEETS_URL.replace('/exec', '/exec') + '?aba=LISTAR_PENDENTES&t=' + Date.now();
+    const resp = await fetch(url, {method:'GET', mode:'cors'});
     const data = await resp.json();
     pendentes = data.pendentes || [];
     renderLista();
   }catch(err){
-    console.error(err);
-    // Fallback: CORS issue with Apps Script — use no-cors and inform user
+    console.error('Erro ao carregar pendentes:', err);
     listEl.innerHTML = `
       <div class="empty-state">
         <div class="emoji">⚠️</div>
-        <p>Não foi possível carregar a lista automaticamente.<br/>
-        Verifique sua conexão e tente novamente.</p>
-        <button onclick="carregarPendentes()" style="margin-top:1rem;padding:.5rem 1.2rem;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold);border-radius:var(--radius);cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:.08em">Tentar Novamente</button>
+        <p style="margin-bottom:.8rem">Não foi possível conectar.<br/>Verifique sua conexão.</p>
+        <button onclick="carregarPendentes()" style="padding:.5rem 1.2rem;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold);border-radius:6px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:.08em">Tentar Novamente</button>
       </div>`;
   }
 }
