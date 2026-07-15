@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <title>Aprovação RFO · Netturbo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --green:#8bc34a;--green-dark:#5d8a1f;--green-glow:rgba(139,195,74,.22);--green-dim:rgba(139,195,74,.08);
+      --bg:#080808;--surface:#111;--surface2:#181818;--surface3:#212121;
+      --border:#252525;--border-hi:#353535;
+      --text:#e8e8e8;--text-dim:#888;--text-muted:#505050;
+      --red:#e53935;--amber:#ffa000;--gold:#d4a843;
+      --radius:6px;--radius-lg:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:15px;scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:2rem}
+
+    /* LOGIN */
+    #login-overlay{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 30%,#0d1a06,#080808);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+    .login-box{width:100%;max-width:340px;background:linear-gradient(160deg,#131813,#0f0f0f);border:1px solid #1e2e12;border-radius:20px;padding:2.5rem 2rem;display:flex;flex-direction:column;align-items:center;gap:1.4rem;box-shadow:0 0 80px rgba(212,168,67,.07)}
+    .login-logo-wrap{width:80px;height:80px;border-radius:50%;overflow:hidden;border:2.5px solid var(--gold);box-shadow:0 0 30px rgba(212,168,67,.2)}
+    .login-logo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .login-heading{text-align:center}
+    .login-heading h2{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);line-height:1}
+    .login-heading p{font-size:.63rem;color:var(--text-muted);letter-spacing:.18em;text-transform:uppercase;margin-top:.3rem}
+    .login-badge{font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:.3rem .8rem;border-radius:20px;background:rgba(212,168,67,.1);color:var(--gold);border:1px solid rgba(212,168,67,.3)}
+    .login-field{width:100%;display:flex;flex-direction:column;gap:.3rem}
+    .login-field label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim)}
+    .login-field input{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;padding:.75rem 1rem;width:100%;transition:border-color .2s,box-shadow .2s}
+    .login-field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.1)}
+    .login-btn{width:100%;padding:.85rem;background:linear-gradient(135deg,#8a6010,#d4a843);border:none;border-radius:8px;color:#050505;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+    .login-btn:active{opacity:.85}
+    .login-error{font-size:.75rem;color:var(--red);background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);border-radius:6px;padding:.5rem .75rem;width:100%;text-align:center;display:none}
+    .login-error.visible{display:block}
+
+    /* HEADER */
+    header{background:linear-gradient(180deg,#100d04,#0f0f0f);border-bottom:1px solid #1e1a08;position:sticky;top:0;z-index:100;box-shadow:0 2px 30px rgba(0,0,0,.75)}
+    .header-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:.9rem;padding:.6rem 1rem}
+    .hdr-logo{width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--gold);box-shadow:0 0 12px rgba(212,168,67,.3)}
+    .hdr-logo img{width:100%;height:100%;object-fit:cover;display:block}
+    .hdr-title{flex:1}
+    .hdr-brand-row{display:flex;align-items:center;gap:.5rem}
+    .hdr-brand{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;line-height:1}
+    .hdr-pill{font-family:'Rajdhani',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.25);border-radius:4px;padding:.1rem .4rem}
+    .hdr-sub{font-size:.58rem;color:var(--text-muted);letter-spacing:.15em;text-transform:uppercase;margin-top:.1rem}
+    .access-badge{font-size:.56rem;font-weight:700;letter-spacing:.1em;padding:.22rem .5rem;border-radius:20px;text-transform:uppercase;background:rgba(212,168,67,.1);color:var(--gold);border:1px solid rgba(212,168,67,.3)}
+
+    main{max-width:680px;margin:0 auto;padding:1.2rem 1rem 0}
+
+    /* CARD */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:.9rem;overflow:hidden}
+    .card-header{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;background:var(--surface2);border-bottom:1px solid var(--border)}
+    .card-icon{width:27px;height:27px;background:rgba(212,168,67,.08);border:1px solid #8a6010;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+    .card-header h2{font-family:'Rajdhani',sans-serif;font-size:.83rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+    .card-body{padding:.9rem 1rem}
+    .card-body>*+*{margin-top:.7rem}
+
+    /* FIELDS */
+    .field{display:flex;flex-direction:column;gap:.28rem}
+    .field label{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+    .field input,.field select,.field textarea{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.1)}
+    .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;padding-right:2rem}
+    .field textarea{resize:vertical;min-height:75px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+    .divider{height:1px;background:var(--border);margin:.72rem 0}
+
+    /* LISTA PENDENTES */
+    .pendente-card{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius-lg);padding:.85rem 1rem;cursor:pointer;transition:border-color .2s,background .2s;-webkit-tap-highlight-color:transparent}
+    .pendente-card:hover,.pendente-card.selected{background:rgba(212,168,67,.06);border-color:var(--gold)}
+    .pendente-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+    .pendente-tecnico{font-weight:600;font-size:.9rem;color:var(--text)}
+    .pendente-protocolo{font-family:'Rajdhani',sans-serif;font-size:.8rem;color:var(--gold);font-weight:700}
+    .pendente-meta{font-size:.7rem;color:var(--text-muted);margin-top:.3rem}
+    .pendente-tipo{font-size:.65rem;font-weight:700;letter-spacing:.08em;padding:.2rem .55rem;border-radius:20px;background:rgba(255,109,0,.15);color:var(--amber);border:1px solid rgba(255,109,0,.3)}
+    .badge-pendente{font-size:.6rem;font-weight:700;background:var(--amber);color:#111;padding:.2rem .55rem;border-radius:20px;letter-spacing:.05em}
+
+    /* CAMPO REVISÃO */
+    .rfo-field-row{display:flex;flex-direction:column;gap:.22rem;padding:.55rem .75rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius)}
+    .rfo-field-lbl{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+    .rfo-field-val{font-size:.88rem;color:var(--text);line-height:1.4}
+    .rfo-field-edit{background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-family:'Inter',sans-serif;font-size:.88rem;width:100%;padding:.2rem .1rem;transition:border-color .2s}
+    .rfo-field-edit:focus{outline:none;border-color:var(--gold)}
+    .edited-badge{font-size:.58rem;color:var(--amber);font-weight:700;margin-left:.4rem}
+
+    /* BOTÕES AÇÃO */
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:1rem}
+    .btn-action{padding:.88rem;border:none;border-radius:var(--radius-lg);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;transition:opacity .2s}
+    .btn-aprovar{background:linear-gradient(135deg,#2a5a14,#8bc34a);color:#050505;box-shadow:0 4px 22px rgba(139,195,74,.25)}
+    .btn-reprovar{background:linear-gradient(135deg,#7a1010,#e53935);color:#fff;box-shadow:0 4px 22px rgba(229,57,53,.2)}
+    .btn-action:active{opacity:.82}
+    .btn-refresh{width:100%;padding:.65rem;background:transparent;border:1px solid var(--border-hi);border-radius:var(--radius-lg);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.4rem;margin-bottom:.5rem}
+    .btn-refresh:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-voltar{width:100%;padding:.6rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:.8rem;display:flex;align-items:center;justify-content:center;gap:.35rem}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text-muted)}
+    .empty-state .emoji{font-size:2.5rem;margin-bottom:.6rem}
+    .empty-state p{font-size:.82rem;line-height:1.5}
+
+    /* LOADING */
+    .loading{text-align:center;padding:2rem;color:var(--text-dim);font-size:.82rem}
+    .spinner{width:24px;height:24px;border:2px solid var(--border-hi);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto .6rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* VIEWS */
+    #view-lista{display:block}
+    #view-revisao{display:none}
+
+    #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid #8a6010;border-radius:30px;padding:.6rem 1.2rem;font-size:.78rem;color:var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    footer{max-width:680px;margin:1.5rem auto 0;padding:0 1rem;text-align:center;color:var(--text-muted);font-size:.62rem;letter-spacing:.08em}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo-wrap"><img src="./logo.png" alt="Netturbo"/></div>
+    <div class="login-heading"><h2>Netturbo</h2><p>Aprovação de RFO · Liderança</p></div>
+    <div class="login-badge">🔒 Acesso Restrito</div>
+    <div class="login-field">
+      <label>Senha da Liderança</label>
+      <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="current-password"/>
+    </div>
+    <div class="login-error" id="login-erro">❌ Senha incorreta.</div>
+    <button class="login-btn" onclick="fazerLogin()">Acessar</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="hdr-logo"><img src="./logo.png" alt="Netturbo"/></div>
+    <div class="hdr-title">
+      <div class="hdr-brand-row"><span class="hdr-brand">Netturbo</span><span class="hdr-pill">APROVAÇÃO</span></div>
+      <div class="hdr-sub">Revisão e Aprovação de RFO · Liderança</div>
+    </div>
+    <div class="access-badge">👑 LIDERANÇA</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- VIEW: LISTA DE PENDENTES -->
+  <div id="view-lista">
+
+    <!-- IDENTIFICAÇÃO DO LÍDER -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">👤</div><h2>Líder Revisando</h2></div>
+      <div class="card-body">
+        <div class="field">
+          <label>Selecione seu nome <span style="color:var(--red)">*</span></label>
+          <select id="nome-lider">
+            <option value="">Selecione...</option>
+            <option value="Vinicius Machado">Vinicius Machado</option>
+            <option value="Weslley Rodrigues">Weslley Rodrigues</option>
+            <option value="Leonardo Egídio">Leonardo Egídio</option>
+            <option value="Reginaldo Venâncio">Reginaldo Venâncio</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- LISTA PENDENTES -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">⏳</div><h2>RFOs Aguardando Aprovação</h2></div>
+      <div class="card-body">
+        <button class="btn-refresh" onclick="carregarPendentes()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Atualizar Lista
+        </button>
+        <div id="lista-pendentes">
+          <div class="loading"><div class="spinner"></div>Carregando pendentes...</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- VIEW: REVISÃO DO RFO -->
+  <div id="view-revisao">
+
+    <button class="btn-voltar" onclick="voltarLista()">
+      ← Voltar para a lista
+    </button>
+
+    <!-- INFO LIDER -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">👤</div><h2>Revisão por</h2></div>
+      <div class="card-body">
+        <div style="font-size:.9rem;font-weight:600;color:var(--gold)" id="rev-lider-nome">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem" id="rev-timestamp">—</div>
+      </div>
+    </section>
+
+    <!-- IDENTIFICAÇÃO -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">📋</div><h2>Identificação</h2></div>
+      <div class="card-body" id="rev-identificacao"></div>
+    </section>
+
+    <!-- LOCALIZAÇÃO -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">📍</div><h2>Localização e Protocolo</h2></div>
+      <div class="card-body" id="rev-localizacao"></div>
+    </section>
+
+    <!-- TEMPOS -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">⏱️</div><h2>Tempos</h2></div>
+      <div class="card-body" id="rev-tempos"></div>
+    </section>
+
+    <!-- OCORRÊNCIA -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">⚠️</div><h2>Ocorrência e Causa</h2></div>
+      <div class="card-body" id="rev-ocorrencia"></div>
+    </section>
+
+    <!-- MATERIAIS + FECHAMENTO -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">🔧</div><h2>Materiais e Fechamento</h2></div>
+      <div class="card-body" id="rev-fechamento"></div>
+    </section>
+
+    <!-- OBSERVAÇÃO DO LÍDER -->
+    <section class="card">
+      <div class="card-header"><div class="card-icon">📝</div><h2>Observação do Líder</h2></div>
+      <div class="card-body">
+        <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.4rem;font-style:italic">Opcional — descreva qualquer inconformidade encontrada ou correção realizada:</div>
+        <div class="field">
+          <textarea id="obs-lider" placeholder="Ex: Corrigido horário de término. Causa ajustada de X para Y..." style="min-height:90px"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- AÇÕES -->
+    <div class="btn-row">
+      <button class="btn-action btn-aprovar" onclick="executarAcao('APROVAR')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Aprovar RFO
+      </button>
+      <button class="btn-action btn-reprovar" onclick="executarAcao('REPROVAR')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Reprovar
+      </button>
+    </div>
+
+  </div>
+
+</main>
+<footer>Netturbo O&amp;M © 2026 · Aprovação de RFO</footer>
+<div id="toast"></div>
+
+<script>
+const LIDER_HASH = '7d5d2aad8b9f6e751886444ac5125a3d7552ce3d5e3361808dcfe5e0fd811c0e';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbw3ZSOc2x1lBWGxEHDgukLzmbdy6gJdh8hVrqto8Fsb3LxC4YdMHfQINmv_avaWuhrC/exec';
+
+let pendentes = [];
+let rfoAtual  = null;
+// Dados editáveis do RFO em revisão
+let dadosEditados = {};
+
+// ── AUTH ───────────────────────────────────────────────────────
+async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function fazerLogin(){
+  const h=await sha256(document.getElementById('login-senha').value);
+  if(h===LIDER_HASH){
+    sessionStorage.setItem('aprov_auth','1');
+    document.getElementById('login-overlay').style.display='none';
+    inicializar();
+  }else{
+    const e=document.getElementById('login-erro');e.classList.add('visible');
+    document.getElementById('login-senha').value='';
+    setTimeout(()=>e.classList.remove('visible'),3000);
+  }
+}
+window.fazerLogin=fazerLogin;
+if(sessionStorage.getItem('aprov_auth')==='1'){document.getElementById('login-overlay').style.display='none';inicializar();}
+
+// ── INIT ───────────────────────────────────────────────────────
+function inicializar(){
+  carregarPendentes();
+}
+
+// ── CARREGAR PENDENTES ─────────────────────────────────────────
+async function carregarPendentes(){
+  const listEl = document.getElementById('lista-pendentes');
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando RFOs pendentes...</div>';
+
+  try{
+    const resp = await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {'Content-Type':'text/plain'},
+      body: JSON.stringify({aba:'LISTAR_PENDENTES'})
+    });
+    const data = await resp.json();
+    pendentes = data.pendentes || [];
+    renderLista();
+  }catch(err){
+    console.error(err);
+    // Fallback: CORS issue with Apps Script — use no-cors and inform user
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">⚠️</div>
+        <p>Não foi possível carregar a lista automaticamente.<br/>
+        Verifique sua conexão e tente novamente.</p>
+        <button onclick="carregarPendentes()" style="margin-top:1rem;padding:.5rem 1.2rem;background:rgba(212,168,67,.1);border:1px solid var(--gold);color:var(--gold);border-radius:var(--radius);cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:.08em">Tentar Novamente</button>
+      </div>`;
+  }
+}
+window.carregarPendentes = carregarPendentes;
+
+function renderLista(){
+  const listEl = document.getElementById('lista-pendentes');
+  if(!pendentes.length){
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">✅</div>
+        <p>Nenhum RFO pendente de aprovação.<br/>Todos os relatórios já foram revisados!</p>
+      </div>`;
+    return;
+  }
+  listEl.innerHTML = '';
+  pendentes.forEach((p,idx)=>{
+    const div = document.createElement('div');
+    div.className = 'pendente-card';
+    div.style.marginBottom = '.5rem';
+    div.innerHTML = `
+      <div class="pendente-header">
+        <span class="pendente-tecnico">${p.tecnico||'Técnico'}</span>
+        <span class="badge-pendente">PENDENTE</span>
+      </div>
+      <div class="pendente-meta">
+        🗓️ ${p.data||'—'} &nbsp;·&nbsp; 🏙️ ${p.cidade||'—'} &nbsp;·&nbsp; 📋 ${p.protocolo||'—'}
+      </div>
+      <div style="margin-top:.4rem;display:flex;align-items:center;justify-content:space-between">
+        <span class="pendente-tipo">${p.ocorrencia||'—'}</span>
+        <span style="font-size:.65rem;color:var(--text-muted)">${p.timestamp||''}</span>
+      </div>`;
+    div.onclick = ()=>abrirRevisao(idx);
+    listEl.appendChild(div);
+  });
+}
+
+// ── ABRIR REVISÃO ──────────────────────────────────────────────
+function abrirRevisao(idx){
+  const lider = document.getElementById('nome-lider').value;
+  if(!lider){showToast('⚠️ Selecione seu nome antes de revisar!');return;}
+
+  rfoAtual = pendentes[idx];
+  dadosEditados = {...rfoAtual}; // cópia editável
+
+  document.getElementById('rev-lider-nome').textContent = lider;
+  document.getElementById('rev-timestamp').textContent  = 'Enviado em: ' + (rfoAtual.timestamp||'—');
+  document.getElementById('obs-lider').value = '';
+
+  // Renderiza campos editáveis
+  renderCampos('rev-identificacao',[
+    {lbl:'Empresa',       key:'empresa'},
+    {lbl:'Técnico',       key:'tecnico'},
+    {lbl:'Data',          key:'data'},
+  ]);
+  renderCampos('rev-localizacao',[
+    {lbl:'Protocolo O&M', key:'protocolo'},
+    {lbl:'Cidade',        key:'cidade'},
+    {lbl:'ID',            key:'id_etiq'},
+    {lbl:'Cliente',       key:'cliente'},
+    {lbl:'Local do Defeito', key:'local'},
+    {lbl:'GPS',           key:'gps', readonly:true},
+  ]);
+  renderCampos('rev-tempos',[
+    {lbl:'Hora Início',   key:'hr_inicio'},
+    {lbl:'Hora Término',  key:'hr_termino'},
+    {lbl:'SLA Total',     key:'sla_total'},
+    {lbl:'Chegada',       key:'hr_chegada'},
+    {lbl:'Tempo em Campo',key:'tempo_campo'},
+  ]);
+  renderCampos('rev-ocorrencia',[
+    {lbl:'Tipo de Ocorrência', key:'ocorrencia'},
+    {lbl:'Causa Principal',    key:'causa'},
+    {lbl:'Detalhes / Obs',     key:'obs'},
+  ]);
+  renderCampos('rev-fechamento',[
+    {lbl:'Materiais Utilizados', key:'materiais', textarea:true},
+    {lbl:'Solução Realizada',    key:'solucao',   textarea:true},
+    {lbl:'Tipo CEO',             key:'tipo_ceo'},
+    {lbl:'Melhoria na Rede',     key:'melhoria',  textarea:true},
+  ]);
+
+  // Switch views
+  document.getElementById('view-lista').style.display='none';
+  document.getElementById('view-revisao').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderCampos(containerId, campos){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  campos.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'rfo-field-row';
+    const val = dadosEditados[c.key]||'';
+    if(c.readonly){
+      div.innerHTML = `<div class="rfo-field-lbl">${c.lbl}</div><div class="rfo-field-val" style="font-family:monospace;font-size:.78rem">${val||'—'}</div>`;
+    }else if(c.textarea){
+      div.innerHTML = `<div class="rfo-field-lbl">${c.lbl} <span class="edited-badge" id="badge-${c.key}" style="display:none">✏️ Editado</span></div>
+        <textarea class="rfo-field-edit" style="min-height:70px;resize:vertical" oninput="onEdit('${c.key}',this.value)">${val}</textarea>`;
+    }else{
+      div.innerHTML = `<div class="rfo-field-lbl">${c.lbl} <span class="edited-badge" id="badge-${c.key}" style="display:none">✏️ Editado</span></div>
+        <input type="text" class="rfo-field-edit" value="${val}" oninput="onEdit('${c.key}',this.value)"/>`;
+    }
+    el.appendChild(div);
+  });
+}
+
+window.onEdit = function(key, val){
+  dadosEditados[key] = val;
+  const badge = document.getElementById('badge-'+key);
+  if(badge) badge.style.display = val !== (rfoAtual[key]||'') ? 'inline' : 'none';
+};
+
+function voltarLista(){
+  document.getElementById('view-revisao').style.display='none';
+  document.getElementById('view-lista').style.display='block';
+  rfoAtual = null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.voltarLista = voltarLista;
+
+// ── APROVAR / REPROVAR ─────────────────────────────────────────
+async function executarAcao(acao){
+  const lider = document.getElementById('nome-lider').value;
+  if(!lider){showToast('⚠️ Selecione seu nome!');return;}
+  if(!rfoAtual){showToast('⚠️ Nenhum RFO selecionado!');return;}
+
+  const obsLider = document.getElementById('obs-lider').value.trim();
+
+  if(acao==='REPROVAR' && !obsLider){
+    showToast('⚠️ Descreva o motivo da reprovação!');
+    document.getElementById('obs-lider').focus();
+    return;
+  }
+
+  const confirmMsg = acao==='APROVAR'
+    ? `Confirmar APROVAÇÃO desta RFO de ${rfoAtual.tecnico}?`
+    : `Confirmar REPROVAÇÃO desta RFO de ${rfoAtual.tecnico}?`;
+  if(!confirm(confirmMsg)) return;
+
+  showToast('⏳ Processando...');
+
+  const payload = {
+    ...dadosEditados,
+    aba:          acao,
+    rowIndex:     rfoAtual.rowIndex,
+    aprovado_por: lider,
+    obs_lider:    obsLider
+  };
+
+  try{
+    await fetch(SHEETS_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)
+    });
+
+    if(acao==='APROVAR'){
+      showToast('✅ RFO aprovado e salvo na planilha!');
+    }else{
+      showToast('❌ RFO reprovado. Técnico será notificado.');
+    }
+
+    // Remove da lista local
+    pendentes = pendentes.filter(p=>p.rowIndex!==rfoAtual.rowIndex);
+    voltarLista();
+    renderLista();
+
+  }catch(err){
+    console.error(err);
+    showToast('❌ Erro ao processar. Tente novamente.');
+  }
+}
+window.executarAcao = executarAcao;
+
+// ── TOAST ──────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3200);}
+</script>
+</body>
+</html>

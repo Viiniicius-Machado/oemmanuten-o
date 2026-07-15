@@ -17,27 +17,43 @@ body{background:#080808;color:#e8e8e8;font-family:Inter,sans-serif;min-height:10
 @media(max-width:420px){.cards{grid-template-columns:1fr}}
 .card{background:#111;border-radius:14px;padding:1.6rem 1.1rem;display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;text-decoration:none;transition:transform .2s;-webkit-tap-highlight-color:transparent}
 .card:active{transform:scale(.97)}
-.card.tecnico{border:1px solid #1e2e12}.card.lider{border:1px solid #1e1a08}.card.jornada{border:1px solid #1a1a2e}
+.card.tecnico{border:1px solid #1e2e12}
+.card.lider{border:1px solid #1e1a08}
+.card.aprovacao{border:1px solid #1a2a1a}
+.card.jornada{border:1px solid #1a1a2e}
 .card-icon{font-size:2.2rem}
 .card-title{font-family:Rajdhani,sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.card.tecnico .card-title{color:#8bc34a}.card.lider .card-title{color:#d4a843}.card.jornada .card-title{color:#42a5f5}
+.card.tecnico .card-title{color:#8bc34a}
+.card.lider .card-title{color:#d4a843}
+.card.aprovacao .card-title{color:#66bb6a}
+.card.jornada .card-title{color:#42a5f5}
 .card-desc{font-size:.65rem;color:#505050;line-height:1.5}
 .card-badge{font-size:.56rem;font-weight:700;letter-spacing:.1em;padding:.2rem .55rem;border-radius:20px}
 .card.tecnico .card-badge{background:rgba(139,195,74,.1);color:#8bc34a;border:1px solid rgba(139,195,74,.2)}
 .card.lider .card-badge{background:rgba(212,168,67,.1);color:#d4a843;border:1px solid rgba(212,168,67,.2)}
+.card.aprovacao .card-badge{background:rgba(102,187,106,.1);color:#66bb6a;border:1px solid rgba(102,187,106,.2)}
 .card.jornada .card-badge{background:rgba(66,165,245,.1);color:#42a5f5;border:1px solid rgba(66,165,245,.2)}
 footer{font-size:.6rem;color:#282828;letter-spacing:.1em}
 </style>
 </head>
 <body>
 <div class="logo-wrap"><img src="./logo.png" alt="Netturbo"/></div>
-<div><div class="title">Netturbo</div><div class="subtitle">Sistema de Relatórios · O&amp;M</div></div>
+<div>
+  <div class="title">Netturbo</div>
+  <div class="subtitle">Sistema de Relatórios · O&amp;M</div>
+</div>
 <div class="cards">
   <a class="card tecnico" href="rfo_tecnico.html">
     <div class="card-icon">🔧</div>
     <div class="card-title">RFO Técnico</div>
-    <div class="card-desc">Relatório de manutenção para técnicos de campo</div>
+    <div class="card-desc">Preencha e envie o relatório de manutenção para aprovação</div>
     <div class="card-badge">Equipe Técnica</div>
+  </a>
+  <a class="card aprovacao" href="aprovacao_lider.html">
+    <div class="card-icon">✅</div>
+    <div class="card-title">Aprovar RFO</div>
+    <div class="card-desc">Revise, edite e aprove os RFOs enviados pelos técnicos</div>
+    <div class="card-badge">🔒 Liderança</div>
   </a>
   <a class="card lider" href="fiscal_v2.html">
     <div class="card-icon">💻</div>
@@ -45,10 +61,10 @@ footer{font-size:.6rem;color:#282828;letter-spacing:.1em}
     <div class="card-desc">Relatório fotográfico e auditoria para liderança</div>
     <div class="card-badge">🔒 Liderança</div>
   </a>
-  <a class="card jornada" href="jornada_excedente.html" style="grid-column:1/-1">
+  <a class="card jornada" href="jornada_excedente.html">
     <div class="card-icon">⏰</div>
-    <div class="card-title">Jornada Excedente</div>
-    <div class="card-desc">Justificativa de jornada excedente (Limite &gt; 40h) · Preenchimento e geração de PDF</div>
+    <div class="card-title">Jornada</div>
+    <div class="card-desc">Justificativa de jornada excedente · Limite &gt; 40h</div>
     <div class="card-badge">🔒 Liderança</div>
   </a>
 </div>
