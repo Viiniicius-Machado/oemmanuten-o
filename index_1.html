@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#080808"/>
+<title>Netturbo · O&M Sistema</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080808;color:#e8e8e8;font-family:Inter,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.8rem}
+.logo-wrap{width:90px;height:90px;border-radius:50%;overflow:hidden;border:2px solid #8bc34a;box-shadow:0 0 30px rgba(139,195,74,.2)}
+.logo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.title{font-family:Rajdhani,sans-serif;font-size:2rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8bc34a;text-align:center}
+.subtitle{font-size:.68rem;color:#505050;letter-spacing:.2em;text-transform:uppercase;text-align:center;margin-top:-.6rem}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;width:100%;max-width:520px}
+@media(max-width:420px){.cards{grid-template-columns:1fr}}
+.cards a:last-child{grid-column:1 / -1}
+@media(max-width:420px){.cards a:last-child{grid-column:auto}}
+.card{background:#111;border-radius:14px;padding:1.6rem 1.1rem;display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;text-decoration:none;transition:transform .2s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(.97)}
+.card.tecnico{border:1px solid #1e2e12}
+.card.lider{border:1px solid #1e1a08}
+.card.aprovacao{border:1px solid #1a2a1a}
+.card.jornada{border:1px solid #1a1a2e}
+.card.dashboard{border:1px solid #2a1a2e}
+.card-icon{font-size:2.2rem}
+.card-title{font-family:Rajdhani,sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.card.tecnico .card-title{color:#8bc34a}
+.card.lider .card-title{color:#d4a843}
+.card.aprovacao .card-title{color:#66bb6a}
+.card.jornada .card-title{color:#42a5f5}
+.card.dashboard .card-title{color:#ab47bc}
+.card-desc{font-size:.65rem;color:#505050;line-height:1.5}
+.card-badge{font-size:.56rem;font-weight:700;letter-spacing:.1em;padding:.2rem .55rem;border-radius:20px}
+.card.tecnico .card-badge{background:rgba(139,195,74,.1);color:#8bc34a;border:1px solid rgba(139,195,74,.2)}
+.card.lider .card-badge{background:rgba(212,168,67,.1);color:#d4a843;border:1px solid rgba(212,168,67,.2)}
+.card.aprovacao .card-badge{background:rgba(102,187,106,.1);color:#66bb6a;border:1px solid rgba(102,187,106,.2)}
+.card.jornada .card-badge{background:rgba(66,165,245,.1);color:#42a5f5;border:1px solid rgba(66,165,245,.2)}
+.card.dashboard .card-badge{background:rgba(171,71,188,.1);color:#ab47bc;border:1px solid rgba(171,71,188,.2)}
+footer{font-size:.6rem;color:#282828;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div class="logo-wrap"><img src="./logo.png" alt="Netturbo"/></div>
+<div>
+  <div class="title">Netturbo</div>
+  <div class="subtitle">Sistema de Relatórios · O&amp;M</div>
+</div>
+<div class="cards">
+  <a class="card tecnico" href="rfo_tecnico.html">
+    <div class="card-icon">🔧</div>
+    <div class="card-title">RFO Técnico</div>
+    <div class="card-desc">Preencha e envie o relatório de manutenção para aprovação</div>
+    <div class="card-badge">Equipe Técnica</div>
+  </a>
+  <a class="card aprovacao" href="aprovacao_lider.html">
+    <div class="card-icon">✅</div>
+    <div class="card-title">Aprovar RFO</div>
+    <div class="card-desc">Revise, edite e aprove os RFOs enviados pelos técnicos</div>
+    <div class="card-badge">🔒 Liderança</div>
+  </a>
+  <a class="card lider" href="fiscal_v2.html">
+    <div class="card-icon">💻</div>
+    <div class="card-title">Fiscalização</div>
+    <div class="card-desc">Relatório fotográfico e auditoria para liderança</div>
+    <div class="card-badge">🔒 Liderança</div>
+  </a>
+  <a class="card jornada" href="jornada_excedente.html">
+    <div class="card-icon">⏰</div>
+    <div class="card-title">Jornada</div>
+    <div class="card-desc">Justificativa de jornada excedente · Limite &gt; 40h</div>
+    <div class="card-badge">🔒 Liderança</div>
+  </a>
+  <a class="card dashboard" href="dashboard_lideranca.html">
+    <div class="card-icon">📊</div>
+    <div class="card-title">Dashboard</div>
+    <div class="card-desc">Visão geral de ocorrências, SLA e ranking de técnicos</div>
+    <div class="card-badge">🔒 Liderança</div>
+  </a>
+</div>
+<footer>Netturbo O&amp;M © 2026</footer>
+</body>
+</html>
