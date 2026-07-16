@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>Dashboard Liderança · Netturbo O&M</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --panel:#141414;
+    --panel-2:#181818;
+    --border:#232323;
+    --text:#f2f2f0;
+    --muted:#8c8c88;
+    --accent:#22c1a0;     /* dentro do SLA */
+    --warn:#e8a33d;       /* atenção */
+    --breach:#e6484f;     /* estourou SLA */
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- GATE ---------- */
+  #gate{
+    position:fixed; inset:0; background:var(--bg); z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  }
+  #gate img{width:56px; opacity:.9;}
+  #gate h1{font-size:15px; font-weight:600; letter-spacing:.02em; color:var(--muted); margin:0;}
+  #gate input{
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    font-family:var(--mono); font-size:14px; padding:12px 14px; border-radius:8px;
+    width:240px; text-align:center; letter-spacing:.1em;
+  }
+  #gate input:focus{outline:none; border-color:var(--accent);}
+  #gate button{
+    background:var(--accent); color:#06231d; border:none; font-weight:600;
+    padding:11px 20px; border-radius:8px; cursor:pointer; font-family:var(--sans);
+  }
+  #gateError{color:var(--breach); font-size:12px; height:14px;}
+
+  /* ---------- SHELL ---------- */
+  #app{display:none; max-width:1240px; margin:0 auto; padding:28px 20px 60px;}
+  header.top{display:flex; align-items:center; gap:12px; margin-bottom:28px;}
+  header.top img{width:34px;}
+  header.top .t1{font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);}
+  header.top .t2{font-size:18px; font-weight:700;}
+  header.top .spacer{flex:1;}
+  #lastSync{font-family:var(--mono); font-size:11px; color:var(--muted);}
+
+  /* ---------- KPI ROW ---------- */
+  .kpis{display:grid; grid-template-columns:1.1fr 1.4fr 1.2fr 1.3fr; gap:14px; margin-bottom:22px;}
+  @media(max-width:900px){.kpis{grid-template-columns:1fr 1fr;}}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px;}
+  .card .label{font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:10px;}
+  .kpi-big{font-family:var(--mono); font-size:36px; font-weight:600; line-height:1;}
+  .kpi-sub{font-size:12px; color:var(--muted); margin-top:6px;}
+
+  /* SLA dial */
+  .dial-wrap{display:flex; align-items:center; gap:16px;}
+  .dial{width:88px; height:88px; flex-shrink:0;}
+  .dial-pct{font-family:var(--mono); font-size:22px; font-weight:600;}
+  .dial-legend{font-size:12px; color:var(--muted); line-height:1.5;}
+  .dial-legend b{color:var(--text);}
+
+  /* occurrence type bars */
+  .type-row{display:flex; align-items:center; gap:8px; font-size:12px; margin-top:8px;}
+  .type-row .name{width:90px; color:var(--muted); font-family:var(--mono); font-size:10.5px;}
+  .type-row .bar{flex:1; height:6px; background:var(--panel-2); border-radius:3px; overflow:hidden;}
+  .type-row .bar span{display:block; height:100%; background:var(--accent);}
+  .type-row .count{font-family:var(--mono); font-size:11px; color:var(--muted); width:22px; text-align:right;}
+
+  /* ranking */
+  .rank-item{display:flex; align-items:center; gap:10px; padding:6px 0; border-top:1px solid var(--border);}
+  .rank-item:first-child{border-top:none;}
+  .rank-pos{font-family:var(--mono); font-size:11px; color:var(--muted); width:16px;}
+  .rank-name{flex:1; font-size:12.5px;}
+  .rank-pct{font-family:var(--mono); font-size:12px; font-weight:600;}
+
+  /* ---------- FILTER BAR ---------- */
+  .filters{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px;}
+  select, .search{
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    font-family:var(--sans); font-size:12.5px; padding:9px 12px; border-radius:8px;
+  }
+  select:focus, .search:focus{outline:none; border-color:var(--accent);}
+  .filters .spacer{flex:1;}
+  #exportBtn{
+    background:var(--panel); border:1px solid var(--accent); color:var(--accent);
+    font-family:var(--sans); font-weight:600; font-size:12.5px; padding:9px 16px;
+    border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  #exportBtn:hover{background:rgba(34,193,160,.1);}
+
+  /* ---------- TABLE ---------- */
+  .table-wrap{background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:auto;}
+  table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:920px;}
+  thead th{
+    text-align:left; padding:12px 14px; color:var(--muted); font-weight:600;
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--panel);
+  }
+  tbody td{padding:11px 14px; border-bottom:1px solid var(--border); font-family:var(--mono); font-size:12px; white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--panel-2);}
+  .pill{padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:600; font-family:var(--sans);}
+  .pill.ok{background:rgba(34,193,160,.15); color:var(--accent);}
+  .pill.breach{background:rgba(230,72,79,.15); color:var(--breach);}
+  #emptyState{padding:40px; text-align:center; color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+  <!-- ============ GATE (senha da liderança — mesma lógica das outras páginas) ============ -->
+  <div id="gate">
+    <img src="logo.png" onerror="this.style.display='none'">
+    <h1>Dashboard · Acesso Liderança</h1>
+    <input id="pwdInput" type="password" placeholder="Senha" autocomplete="off">
+    <button onclick="tryLogin()">Entrar</button>
+    <div id="gateError"></div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app">
+    <header class="top">
+      <img src="logo.png" onerror="this.style.display='none'">
+      <div>
+        <div class="t1">Netturbo · O&M</div>
+        <div class="t2">Dashboard de Ocorrências</div>
+      </div>
+      <div class="spacer"></div>
+      <div id="lastSync">carregando...</div>
+    </header>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="card">
+        <div class="label">Total de Ocorrências</div>
+        <div class="kpi-big" id="kpiTotal">–</div>
+        <div class="kpi-sub" id="kpiPeriodo">período selecionado</div>
+      </div>
+
+      <div class="card">
+        <div class="label">SLA · Dentro de 4h</div>
+        <div class="dial-wrap">
+          <svg class="dial" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#232323" stroke-width="10"/>
+            <circle id="dialArc" cx="50" cy="50" r="42" fill="none" stroke="#22c1a0" stroke-width="10"
+                    stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"
+                    transform="rotate(-90 50 50)"/>
+            <text x="50" y="56" text-anchor="middle" fill="#f2f2f0" font-family="IBM Plex Mono" font-size="20" font-weight="600" id="dialText">0%</text>
+          </svg>
+          <div class="dial-legend">
+            <div><b id="kpiOk">0</b> dentro do prazo</div>
+            <div><b id="kpiBreach">0</b> estouraram</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">Ranking · Técnicos (% no prazo)</div>
+        <div id="rankList"><div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Por Tipo de Ocorrência</div>
+        <div id="typeList"></div>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters">
+      <select id="fEmpresa"><option value="">Empresa (todas)</option></select>
+      <select id="fTecnico"><option value="">Técnico (todos)</option></select>
+      <select id="fTipo"><option value="">Tipo (todos)</option></select>
+      <select id="fStatus">
+        <option value="">Status SLA (todos)</option>
+        <option value="ok">Dentro do prazo</option>
+        <option value="breach">Estourou</option>
+      </select>
+      <input class="search" id="fBusca" placeholder="Buscar protocolo / cliente / cidade">
+      <div class="spacer"></div>
+      <button id="exportBtn" onclick="exportExcel()">⬇ Exportar Excel</button>
+    </div>
+
+    <!-- TABELA -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th><th>Técnico</th><th>Protocolo</th><th>Cidade</th><th>Tipo</th>
+            <th>Início</th><th>Chegada</th><th>Término</th>
+            <th>MTTR</th><th>MTTD (campo)</th><th>Status SLA</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="emptyState" style="display:none;">Nenhuma RFO encontrada com esse filtro.</div>
+    </div>
+  </div>
+
+<script>
+/* ======================================================================
+   CONFIGURAÇÃO
+   Troque pela URL do seu Web App do Apps Script (a mesma URL já usada nas
+   outras páginas — SHEETS_URL no rfo_tecnico.html e aprovacao_lider.html).
+   Requer a função listarRFO() + o branch "LISTAR_RFO" no doGet() do
+   Código.gs — sem isso, o doGet() padrão devolve só um health-check e o
+   dashboard não vai ter dado nenhum pra mostrar.
+   ====================================================================== */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYC4xExygpFSTdD60L3G5Ek05y4DwnEouA6LgWhTu5IdHPROQ2N3UmLVB2UdnGgn-d/exec";
+const LEADERSHIP_PASSWORD = "Manutenção@101";
+const SLA_LIMIT_MINUTES = 240; // 4h, fixo pra todo tipo de ocorrência
+
+let RECORDS = [];
+
+function tryLogin(){
+  const val = document.getElementById('pwdInput').value;
+  if(val === LEADERSHIP_PASSWORD){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('gateError').textContent = '❌ Senha incorreta.';
+  }
+}
+
+async function loadData(){
+  document.getElementById('lastSync').textContent = 'sincronizando...';
+  try{
+    const res = await fetch(APPS_SCRIPT_URL);
+    const raw = await res.json();
+    RECORDS = raw.map(normalize);
+  }catch(e){
+    console.warn('Falha ao buscar dados reais, usando dados de exemplo:', e);
+    RECORDS = demoData().map(normalize);
+  }
+  populateFilters();
+  render();
+  document.getElementById('lastSync').textContent = 'atualizado ' + new Date().toLocaleString('pt-BR');
+}
+
+/* IMPORTANTE: não recalculamos MTTR/MTTD a partir dos horários brutos.
+   A planilha (aba RFO) já traz "SLA Total" e "Tempo em Campo" prontos,
+   calculados pelo próprio formulário do técnico — inclusive tratando
+   virada de meia-noite e o modo "+24h". Recalcular aqui do zero reproduzia
+   esses casos errado, então só interpretamos o texto que já vem pronto. */
+function parseDur(str){
+  if(!str) return null;
+  const m = String(str).trim().match(/^(\d{1,3}):(\d{2})$/);
+  if(!m) return null; // cobre "??:??", vazio, ou formato inesperado
+  return parseInt(m[1],10)*60 + parseInt(m[2],10);
+}
+
+function normalize(r){
+  const mttr = parseDur(r.sla_total);
+  const mttdCampo = parseDur(r.tempo_campo);
+  return {
+    empresa: r.empresa || '—',
+    tecnico: r.tecnico || '—',
+    protocolo: r.protocolo || '—',
+    cidade: r.cidade || '—',
+    cliente: r.cliente || '—',
+    tipo: r.tipo || '—',
+    hrInicio: r.hr_inicio || '—',
+    hrChegada: r.hr_chegada || '—',
+    hrTermino: r.hr_termino || '—',
+    slaTotalStr: r.sla_total || '—',
+    tempoCampoStr: r.tempo_campo || '—',
+    mttr, mttdCampo,
+    slaOk: mttr === null ? null : mttr <= SLA_LIMIT_MINUTES
+  };
+}
+
+function fmtMin(min){
+  if(min === null || isNaN(min)) return '—';
+  const h = Math.floor(min/60), m = Math.round(min%60);
+  return h + 'h' + String(m).padStart(2,'0');
+}
+
+function currentFilters(){
+  return {
+    empresa: document.getElementById('fEmpresa').value,
+    tecnico: document.getElementById('fTecnico').value,
+    tipo: document.getElementById('fTipo').value,
+    status: document.getElementById('fStatus').value,
+    busca: document.getElementById('fBusca').value.trim().toLowerCase()
+  };
+}
+
+function filtered(){
+  const f = currentFilters();
+  return RECORDS.filter(r=>{
+    if(f.empresa && r.empresa !== f.empresa) return false;
+    if(f.tecnico && r.tecnico !== f.tecnico) return false;
+    if(f.tipo && r.tipo !== f.tipo) return false;
+    if(f.status === 'ok' && r.slaOk !== true) return false;
+    if(f.status === 'breach' && r.slaOk !== false) return false;
+    if(f.busca){
+      const blob = (r.protocolo+' '+r.cliente+' '+r.cidade).toLowerCase();
+      if(!blob.includes(f.busca)) return false;
+    }
+    return true;
+  });
+}
+
+function populateFilters(){
+  const empresas = [...new Set(RECORDS.map(r=>r.empresa))].sort();
+  const tecnicos = [...new Set(RECORDS.map(r=>r.tecnico))].sort();
+  const tipos = [...new Set(RECORDS.map(r=>r.tipo))].sort();
+  fillSelect('fEmpresa', empresas);
+  fillSelect('fTecnico', tecnicos);
+  fillSelect('fTipo', tipos);
+  ['fEmpresa','fTecnico','fTipo','fStatus'].forEach(id=>
+    document.getElementById(id).addEventListener('change', render));
+  document.getElementById('fBusca').addEventListener('input', render);
+}
+function fillSelect(id, values){
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  sel.innerHTML = sel.querySelector('option').outerHTML;
+  values.forEach(v=>{
+    const o = document.createElement('option'); o.value=v; o.textContent=v;
+    sel.appendChild(o);
+  });
+  sel.value = current;
+}
+
+function render(){
+  const rows = filtered();
+  renderKpis(rows);
+  renderRanking(rows);
+  renderTypes(rows);
+  renderTable(rows);
+}
+
+function renderKpis(rows){
+  document.getElementById('kpiTotal').textContent = rows.length;
+  const ok = rows.filter(r=>r.slaOk===true).length;
+  const breach = rows.filter(r=>r.slaOk===false).length;
+  const semDado = rows.length - ok - breach;
+  const base = ok + breach; // % calculado só sobre quem tem SLA reconhecido
+  const pct = base ? Math.round(ok/base*100) : 0;
+  document.getElementById('kpiOk').textContent = ok;
+  document.getElementById('kpiBreach').textContent = breach + (semDado ? ` (+${semDado} sem dado)` : '');
+  document.getElementById('dialText').textContent = pct + '%';
+  const circumference = 264;
+  const offset = circumference - (circumference * pct/100);
+  document.getElementById('dialArc').style.strokeDashoffset = offset;
+  document.getElementById('dialArc').style.stroke = pct >= 80 ? '#22c1a0' : (pct >= 60 ? '#e8a33d' : '#e6484f');
+}
+
+function renderRanking(rows){
+  const byTech = {};
+  rows.forEach(r=>{
+    if(r.slaOk === null) return; // sem dado de SLA reconhecido, não entra na base do ranking
+    byTech[r.tecnico] = byTech[r.tecnico] || {total:0, ok:0};
+    byTech[r.tecnico].total++;
+    if(r.slaOk) byTech[r.tecnico].ok++;
+  });
+  const ranked = Object.entries(byTech)
+    .map(([nome,v])=>({nome, pct: v.total ? Math.round(v.ok/v.total*100) : 0, total:v.total}))
+    .sort((a,b)=> b.pct - a.pct)
+    .slice(0,6);
+  const el = document.getElementById('rankList');
+  el.innerHTML = ranked.length ? ranked.map((r,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-name">${r.nome}</div>
+      <div class="rank-pct" style="color:${r.pct>=80?'#22c1a0':r.pct>=60?'#e8a33d':'#e6484f'}">${r.pct}%</div>
+    </div>`).join('') : '<div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div>';
+}
+
+function renderTypes(rows){
+  const byType = {};
+  rows.forEach(r=> byType[r.tipo] = (byType[r.tipo]||0)+1);
+  const max = Math.max(1, ...Object.values(byType));
+  const el = document.getElementById('typeList');
+  el.innerHTML = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([tipo,count])=>`
+    <div class="type-row">
+      <div class="name">${tipo}</div>
+      <div class="bar"><span style="width:${count/max*100}%"></span></div>
+      <div class="count">${count}</div>
+    </div>`).join('') || '<div style="color:var(--muted); font-size:12px;">sem dados</div>';
+}
+
+function renderTable(rows){
+  const tbody = document.getElementById('tbody');
+  document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
+  tbody.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.empresa}</td>
+      <td>${r.tecnico}</td>
+      <td>${r.protocolo}</td>
+      <td>${r.cidade}</td>
+      <td>${r.tipo}</td>
+      <td>${r.hrInicio}</td>
+      <td>${r.hrChegada}</td>
+      <td>${r.hrTermino}</td>
+      <td>${r.slaTotalStr}</td>
+      <td>${r.tempoCampoStr}</td>
+      <td>${r.slaOk===null ? '<span class="pill">Sem dado</span>' : `<span class="pill ${r.slaOk?'ok':'breach'}">${r.slaOk?'Dentro do prazo':'Estourou'}</span>`}</td>
+    </tr>`).join('');
+}
+
+function exportExcel(){
+  const rows = filtered().map(r=>({
+    'Empresa': r.empresa,
+    'Técnico': r.tecnico,
+    'Protocolo': r.protocolo,
+    'Cidade': r.cidade,
+    'Cliente': r.cliente,
+    'Tipo de Ocorrência': r.tipo,
+    'Início': r.hrInicio,
+    'Chegada no Local': r.hrChegada,
+    'Término': r.hrTermino,
+    'SLA Total (MTTR)': r.slaTotalStr,
+    'Tempo em Campo (MTTD)': r.tempoCampoStr,
+    'Status SLA (4h)': r.slaOk===null ? 'Sem dado' : (r.slaOk ? 'Dentro do prazo' : 'Estourou')
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'RFOs');
+  const dataStr = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `RFO_Netturbo_${dataStr}.xlsx`);
+}
+
+/* Dados de exemplo — usados só se o Apps Script ainda não estiver configurado,
+   pra você já ver o layout funcionando antes de plugar o backend.
+   Formato igual ao que o doGet() real devolve (SLA Total/Tempo em Campo prontos). */
+function demoData(){
+  return [
+    {empresa:'VAL', tecnico:'Guilherme de Jesus Arruda', protocolo:'PR-1029', cidade:'Sumaré', cliente:'Cliente A', tipo:'ROMPIMENTO', hr_inicio:'08:00', hr_chegada:'09:10', hr_termino:'10:40', sla_total:'02:40', tempo_campo:'01:30'},
+    {empresa:'SOLUTEC', tecnico:'Marcio Aparecido Santiago', protocolo:'PR-1030', cidade:'Campinas', cliente:'Cliente B', tipo:'MASSIVA', hr_inicio:'09:00', hr_chegada:'10:30', hr_termino:'13:50', sla_total:'04:50', tempo_campo:'03:20'},
+    {empresa:'PV', tecnico:'Petterson Valentim Barreto', protocolo:'PR-1031', cidade:'Hortolândia', cliente:'Cliente C', tipo:'ACOMPANHAMENTO CPFL', hr_inicio:'07:30', hr_chegada:'07:50', hr_termino:'08:40', sla_total:'01:10', tempo_campo:'00:50'},
+    {empresa:'OLIVEIRA', tecnico:'Evaneis Silva Oliveira', protocolo:'PR-1032', cidade:'Sumaré', cliente:'Cliente D', tipo:'PREVENTIVA', hr_inicio:'13:00', hr_chegada:'13:20', hr_termino:'14:00', sla_total:'01:00', tempo_campo:'00:40'},
+    {empresa:'QUALITY', tecnico:'Wesley Henrique da Silva Rios', protocolo:'PR-1033', cidade:'Paulínia', cliente:'Cliente E', tipo:'ROMPIMENTO', hr_inicio:'18:00', hr_chegada:'18:40', hr_termino:'23:10', sla_total:'05:10', tempo_campo:'04:30'},
+    {empresa:'NETTURBO', tecnico:'Nicolas Lima de Almeida', protocolo:'PR-1034', cidade:'Campinas', cliente:'Cliente F', tipo:'MASSIVA', hr_inicio:'06:00', hr_chegada:'06:35', hr_termino:'07:50', sla_total:'01:50', tempo_campo:'01:15'}
+  ];
+}
+</script>
+</body>
+</html>
+
