@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -161,9 +162,23 @@
   <section class="card">
     <div class="card-header"><div class="card-icon">📋</div><h2>Identificação</h2></div>
     <div class="card-body">
-      <div class="field"><label>Empresa Prestadora</label><input type="text" id="empresa" placeholder="Ex: Netturbo"/></div>
+      <div class="field"><label>Empresa Prestadora</label>
+        <select id="empresa" onchange="atualizarTecnicos()">
+          <option value="">Selecione...</option>
+          <option value="OLIVEIRA">OLIVEIRA</option>
+          <option value="VAL">VAL</option>
+          <option value="PV">PV</option>
+          <option value="SOLUTEC">SOLUTEC</option>
+          <option value="QUALITY">QUALITY</option>
+          <option value="NETTURBO">NETTURBO</option>
+        </select>
+      </div>
       <div class="grid2">
-        <div class="field"><label>Técnico</label><input type="text" id="tecnico" placeholder="Seu nome"/></div>
+        <div class="field"><label>Técnico</label>
+          <select id="tecnico">
+            <option value="">Selecione a empresa primeiro...</option>
+          </select>
+        </div>
         <div class="field"><label>Data</label><input type="date" id="data"/></div>
       </div>
     </div>
@@ -303,6 +318,23 @@ const SENHA_HASH='1d6971f693cb40bcee4942b2937b8ab6b0e4f0c7d3ca7506b65793fcc48969
 const SHEETS_URL='https://script.google.com/macros/s/AKfycbzYC4xExygpFSTdD60L3G5Ek05y4DwnEouA6LgWhTu5IdHPROQ2N3UmLVB2UdnGgn-d/exec';
 const MAT_FIBRA=['CABO 12F','CABO 4F','CABO 24F','CABO 72F','ALÇA VERMELHA','MINI FISC','PLAQUETA NTT','FIO DE ESPINAR','FISC 48FO','EMENDA DROP 12F (PASTEL)'];
 
+const TECH_MAP = {
+  "NETTURBO": ["Leonardo da Cruz Egidio","Weslley Rodrigues Pinto","Reginaldo Venâncio da Silva","Nicolas Lima de Almeida","Warley Aparecido de Paula","Marco Rodrigo dos Santos","Micael Oliveira dos Santos","Tiago Soares da Silva Calado"],
+  "OLIVEIRA": ["Evaneis Silva Oliveira"],
+  "PV": ["Petterson Valentim Barreto"],
+  "QUALITY": ["Jurandy Luis da Silva Filho","Guilherme dos Santos Reis","Wesley Henrique da Silva Rios"],
+  "SOLUTEC": ["Lielder Rogers Miranda","Marcio Aparecido Santiago"],
+  "VAL": ["Guilherme de Jesus Arruda","Djalma Aparecido Inocêncio","Marcos Mendes Merino","Altimayer de Araújo Lima","Robson Rodrigues Santos","Felipe Martins Santos Silva","Jonathan Henrique Honorato","Diego Eduardo de Souza Basso"]
+};
+
+function atualizarTecnicos(){
+  const empresa = document.getElementById('empresa').value;
+  const nomes = TECH_MAP[empresa] || [];
+  const sel = document.getElementById('tecnico');
+  sel.innerHTML = '<option value="">Selecione...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+window.atualizarTecnicos = atualizarTecnicos;
+
 const configCausas={
   'ROMPIMENTO':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
   'MASSIVA':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
@@ -342,6 +374,24 @@ function calcTemposAvancado(){
   const ms=dtF-dtI,diffH=Math.floor(ms/3600000),diffM=Math.floor((ms%3600000)/60000),dias=Math.floor(diffH/24);
   document.getElementById('display-sla').innerText=String(diffH).padStart(2,'0')+':'+String(diffM).padStart(2,'0');
   document.getElementById('sla-dias').innerText=dias>0?`(${dias}d ${diffH%24}h)`:'';
+
+  // Tempo em Campo no modo +24h: assume que a Chegada aconteceu no mesmo dia do Início
+  // (confirmado pelo Vinicius — se um dia a chegada puder acontecer no dia seguinte, essa
+  // suposição precisa mudar).
+  const cVal=document.getElementById('hr-chegada').value;
+  if(cVal){
+    const [hC,mC]=cVal.split(':').map(Number);
+    let dtC=new Date(dtI.getFullYear(),dtI.getMonth(),dtI.getDate(),hC,mC,0);
+    if(dtC<dtI) dtC=new Date(dtC.getTime()+86400000); // ex: início 23:50, chegada 00:10 -> chegada "virou o dia"
+    if(dtC>dtF){
+      document.getElementById('display-campo').innerText='00:00';
+    }else{
+      const msCampo=dtF-dtC,hCampo=Math.floor(msCampo/3600000),mCampo=Math.floor((msCampo%3600000)/60000);
+      document.getElementById('display-campo').innerText=String(hCampo).padStart(2,'0')+':'+String(mCampo).padStart(2,'0');
+    }
+  }else{
+    document.getElementById('display-campo').innerText='00:00';
+  }
   saveLocal();
 }
 
@@ -382,7 +432,6 @@ tipoChips.forEach(chip=>{
 function renderCausas(){
   causaCont.innerHTML='';
   if(state.tipo==='ACOMPANHAMENTO CPFL'){
-    // Campo número de notificação CPFL
     const wrapper=document.createElement('div');wrapper.style.cssText='display:flex;flex-direction:column;gap:.5rem';
     const lbl=document.createElement('div');lbl.style.cssText='font-size:.68rem;color:var(--text-muted);font-style:italic';lbl.innerText='Informe o número da notificação CPFL:';
     const inp=document.createElement('input');inp.type='text';inp.placeholder='Nº da Notificação CPFL...';inp.value=state.causa||'';
@@ -400,7 +449,6 @@ function renderCausas(){
     inp.onblur=function(){this.style.borderColor='';this.style.boxShadow='';};
     causaCont.appendChild(inp);return;
   }
-  // Label dinâmico
   const lblCausa=document.getElementById('lbl-causa');
   if(lblCausa){
     if(state.tipo==='ACOMPANHAMENTO CPFL') lblCausa.textContent='Nº da Notificação';
@@ -518,7 +566,6 @@ function gerarRelatorio(){
     ocorrencia:state.tipo,causa:state.causa,obs_extras:'',materiais:strMat,
     solucao:v('solucao'),tipo_ceo:ceoLabel,melhoria:v('melhoria')
   };
-  // Envia para PENDENTES aguardando aprovação da liderança
   if(navigator.onLine){
     fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
       .then(()=>showToast('⏳ RFO enviado! Aguardando aprovação da liderança.'))
