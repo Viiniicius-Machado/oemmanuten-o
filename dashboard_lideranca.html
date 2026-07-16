@@ -149,7 +149,7 @@
       </div>
 
       <div class="card">
-        <div class="label">SLA · Dentro de 4h</div>
+        <div class="label">Eficiência · Meta 70% (SLA de 4h)</div>
         <div class="dial-wrap">
           <svg class="dial" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="42" fill="none" stroke="#232323" stroke-width="10"/>
@@ -159,8 +159,9 @@
             <text x="50" y="56" text-anchor="middle" fill="#f2f2f0" font-family="IBM Plex Mono" font-size="20" font-weight="600" id="dialText">0%</text>
           </svg>
           <div class="dial-legend">
-            <div><b id="kpiOk">0</b> dentro do prazo</div>
-            <div><b id="kpiBreach">0</b> estouraram</div>
+            <div><b id="kpiOk">0</b> C/SLA</div>
+            <div><b id="kpiBreach">0</b> S/SLA</div>
+            <div id="kpiMetaStatus" style="margin-top:4px;font-weight:600"></div>
           </div>
         </div>
       </div>
@@ -173,6 +174,21 @@
       <div class="card">
         <div class="label">Por Tipo de Ocorrência</div>
         <div id="typeList"></div>
+      </div>
+    </div>
+
+    <!-- EFICIÊNCIA POR TIPO (C/SLA vs S/SLA) -->
+    <div class="kpis" style="grid-template-columns:1fr;">
+      <div class="card">
+        <div class="label">Eficiência por Tipo de Ocorrência — Total, C/SLA e S/SLA</div>
+        <div class="table-wrap" style="margin-top:8px;border:none;background:transparent">
+          <table style="min-width:0">
+            <thead><tr>
+              <th>Tipo</th><th>Total</th><th>C/SLA</th><th>S/SLA</th><th>Eficiência</th>
+            </tr></thead>
+            <tbody id="tbodyEficienciaTipo"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -195,8 +211,8 @@
       <select id="fTipo"><option value="">Tipo (todos)</option></select>
       <select id="fStatus">
         <option value="">Status SLA (todos)</option>
-        <option value="ok">Dentro do prazo</option>
-        <option value="breach">Estourou</option>
+        <option value="ok">C/SLA</option>
+        <option value="breach">S/SLA</option>
       </select>
       <input class="search" id="fBusca" placeholder="Buscar protocolo / cliente / cidade">
       <div class="spacer"></div>
@@ -231,6 +247,7 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYC4xExygpFSTdD60L3G5Ek05y4DwnEouA6LgWhTu5IdHPROQ2N3UmLVB2UdnGgn-d/exec";
 const LEADERSHIP_PASSWORD = "Manutenção@101";
 const SLA_LIMIT_MINUTES = 240; // 4h, fixo pra todo tipo de ocorrência
+const EFFICIENCY_TARGET = 70; // meta de eficiência: % de ocorrências dentro do SLA de 4h
 
 let RECORDS = [];
 
@@ -357,6 +374,7 @@ function render(){
   renderRanking(rows);
   renderRankingEmpresas(rows);
   renderTypes(rows);
+  renderEficienciaPorTipo(rows);
   renderTable(rows);
 }
 
@@ -373,7 +391,14 @@ function renderKpis(rows){
   const circumference = 264;
   const offset = circumference - (circumference * pct/100);
   document.getElementById('dialArc').style.strokeDashoffset = offset;
-  document.getElementById('dialArc').style.stroke = pct >= 80 ? '#22c1a0' : (pct >= 60 ? '#e8a33d' : '#e6484f');
+  const corMeta = pct >= EFFICIENCY_TARGET ? '#22c1a0' : '#e6484f';
+  document.getElementById('dialArc').style.stroke = corMeta;
+  const metaEl = document.getElementById('kpiMetaStatus');
+  const diff = pct - EFFICIENCY_TARGET;
+  metaEl.style.color = corMeta;
+  metaEl.textContent = base
+    ? (pct >= EFFICIENCY_TARGET ? `✓ Meta batida (+${diff}pp)` : `✗ Abaixo da meta (${diff}pp)`)
+    : '';
 }
 
 function renderRanking(rows){
@@ -447,6 +472,32 @@ function renderTypes(rows){
     </div>`).join('') || '<div style="color:var(--muted); font-size:12px;">sem dados</div>';
 }
 
+function renderEficienciaPorTipo(rows){
+  const tbody = document.getElementById('tbodyEficienciaTipo');
+  if(!tbody) return;
+  const byType = {};
+  rows.forEach(r=>{
+    byType[r.tipo] = byType[r.tipo] || {total:0, ok:0, breach:0, semDado:0};
+    byType[r.tipo].total++;
+    if(r.slaOk === true) byType[r.tipo].ok++;
+    else if(r.slaOk === false) byType[r.tipo].breach++;
+    else byType[r.tipo].semDado++;
+  });
+  const entries = Object.entries(byType).sort((a,b)=> b[1].total - a[1].total);
+  tbody.innerHTML = entries.length ? entries.map(([tipo,v])=>{
+    const base = v.ok + v.breach;
+    const pct = base ? Math.round(v.ok/base*100) : 0;
+    const cor = base===0 ? 'var(--muted)' : (pct >= EFFICIENCY_TARGET ? '#22c1a0' : '#e6484f');
+    return `<tr>
+      <td>${tipo}</td>
+      <td>${v.total}</td>
+      <td>${v.ok}</td>
+      <td>${v.breach}${v.semDado ? ` <span style="color:var(--muted)">(+${v.semDado} sem dado)</span>` : ''}</td>
+      <td style="color:${cor};font-weight:600">${base ? pct+'%' : '—'}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="5" style="color:var(--muted)">sem dados</td></tr>';
+}
+
 function renderTable(rows){
   const tbody = document.getElementById('tbody');
   document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
@@ -464,7 +515,7 @@ function renderTable(rows){
       <td>${r.hrTermino}</td>
       <td>${r.slaTotalStr}</td>
       <td>${r.tempoCampoStr}</td>
-      <td>${r.slaOk===null ? '<span class="pill">Sem dado</span>' : `<span class="pill ${r.slaOk?'ok':'breach'}">${r.slaOk?'Dentro do prazo':'Estourou'}</span>`}</td>
+      <td>${r.slaOk===null ? '<span class="pill">Sem dado</span>' : `<span class="pill ${r.slaOk?'ok':'breach'}">${r.slaOk?'C/SLA':'S/SLA'}</span>`}</td>
     </tr>`).join('');
 }
 
@@ -481,7 +532,7 @@ function exportExcel(){
     'Término': r.hrTermino,
     'SLA Total (MTTR)': r.slaTotalStr,
     'Tempo em Campo (MTTD)': r.tempoCampoStr,
-    'Status SLA (4h)': r.slaOk===null ? 'Sem dado' : (r.slaOk ? 'Dentro do prazo' : 'Estourou')
+    'Status SLA (4h)': r.slaOk===null ? 'Sem dado' : (r.slaOk ? 'C/SLA' : 'S/SLA')
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
