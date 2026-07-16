@@ -315,6 +315,14 @@ if(sessionStorage.getItem('aprov_auth')==='1'){document.getElementById('login-ov
 // ── INIT ───────────────────────────────────────────────────────
 function inicializar(){
   carregarPendentes();
+  if(!window._pendAutoRefresh){
+    // Atualiza a lista sozinha a cada 20s — só quando na tela de lista,
+    // pra não atrapalhar o líder que estiver no meio de uma revisão.
+    window._pendAutoRefresh = setInterval(()=>{
+      const naLista = document.getElementById('view-lista').style.display !== 'none';
+      if(naLista) carregarPendentes();
+    }, 20000);
+  }
 }
 
 // ── CARREGAR PENDENTES ─────────────────────────────────────────
