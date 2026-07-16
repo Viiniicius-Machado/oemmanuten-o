@@ -234,6 +234,11 @@
       <div class="card-body" id="rev-localizacao"></div>
     </section>
 
+    <!-- AVISO DE PROTOCOLO DUPLICADO -->
+    <div id="aviso-duplicado" style="display:none;margin-bottom:.9rem;font-size:.78rem;font-weight:700;color:var(--red);background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);border-radius:10px;padding:.7rem .9rem">
+      ⚠️ Este protocolo já aparece em outra RFO (pendente ou já aprovada). Confira se não é duplicidade antes de aprovar.
+    </div>
+
     <!-- TEMPOS (agora com o mesmo cálculo ao vivo do formulário do técnico) -->
     <section class="card">
       <div class="card-header"><div class="card-icon">⏱️</div><h2>Tempos</h2></div>
@@ -361,7 +366,8 @@ function renderLista(){
       <div style="margin-top:.4rem;display:flex;align-items:center;justify-content:space-between">
         <span class="pendente-tipo">${p.ocorrencia||'—'}</span>
         <span style="font-size:.65rem;color:var(--text-muted)">${p.timestamp||''}</span>
-      </div>`;
+      </div>
+      ${p.duplicado ? '<div style="margin-top:.5rem;font-size:.68rem;font-weight:700;color:var(--red);background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);border-radius:6px;padding:.35rem .6rem">⚠️ Protocolo duplicado — confira antes de aprovar</div>' : ''}`;
     div.onclick = ()=>abrirRevisao(idx);
     listEl.appendChild(div);
   });
@@ -383,6 +389,9 @@ function abrirRevisao(idx){
   document.getElementById('rev-lider-nome').textContent = lider;
   document.getElementById('rev-timestamp').textContent  = 'Enviado em: ' + (rfoAtual.timestamp||'—');
   document.getElementById('obs-lider').value = '';
+
+  const avisoEl = document.getElementById('aviso-duplicado');
+  if(avisoEl) avisoEl.style.display = rfoAtual.duplicado ? 'block' : 'none';
 
   renderCampos('rev-identificacao',[
     {lbl:'Empresa',       key:'empresa'},
@@ -691,12 +700,21 @@ async function executarAcao(acao){
   };
 
   try{
-    await fetch(SHEETS_URL,{
+    const resp = await fetch(SHEETS_URL,{
       method:'POST',
-      mode:'no-cors',
+      mode:'cors',
       headers:{'Content-Type':'text/plain'},
       body:JSON.stringify(payload)
     });
+    const result = await resp.json();
+
+    if(result.status !== 'ok'){
+      // Backend recusou — provavelmente outro líder já processou essa RFO nesse meio-tempo
+      showToast('⚠️ ' + (result.message || 'Não foi possível processar.'));
+      voltarLista();
+      carregarPendentes(); // atualiza a lista, pra tirar da tela o que já foi resolvido por outro líder
+      return;
+    }
 
     if(acao==='APROVAR'){
       showToast('✅ RFO aprovado e salvo na planilha!');
