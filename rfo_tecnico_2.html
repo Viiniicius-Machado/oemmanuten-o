@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <title>RFO · Netturbo O&M</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --green:#8bc34a;--green-dark:#5d8a1f;
+      --green-glow:rgba(139,195,74,.22);--green-dim:rgba(139,195,74,.08);
+      --bg:#080808;--surface:#111;--surface2:#181818;--surface3:#212121;
+      --border:#252525;--border-hi:#353535;
+      --text:#e8e8e8;--text-dim:#888;--text-muted:#505050;
+      --red:#e53935;--amber:#ffa000;
+      --radius:6px;--radius-lg:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:15px;scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:2rem}
+    #login-overlay{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 30%,#0d1a06,#080808);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+    .login-box{width:100%;max-width:340px;background:linear-gradient(160deg,#131813,#0f0f0f);border:1px solid #1e2e12;border-radius:20px;padding:2.5rem 2rem;display:flex;flex-direction:column;align-items:center;gap:1.4rem;box-shadow:0 0 80px rgba(139,195,74,.07)}
+    .login-logo-wrap{width:88px;height:88px;border-radius:50%;overflow:hidden;border:2.5px solid var(--green);box-shadow:0 0 30px var(--green-glow)}
+    .login-logo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .login-heading{text-align:center}
+    .login-heading h2{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);line-height:1}
+    .login-heading p{font-size:.63rem;color:var(--text-muted);letter-spacing:.18em;text-transform:uppercase;margin-top:.3rem}
+    .login-field{width:100%;display:flex;flex-direction:column;gap:.3rem}
+    .login-field label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim)}
+    .login-field input{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;padding:.75rem 1rem;width:100%;transition:border-color .2s,box-shadow .2s}
+    .login-field input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+    .login-btn{width:100%;padding:.85rem;background:linear-gradient(135deg,#4a7012,#8bc34a);border:none;border-radius:8px;color:#050505;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+    .login-btn:active{opacity:.85}
+    .login-error{font-size:.75rem;color:var(--red);background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);border-radius:6px;padding:.5rem .75rem;width:100%;text-align:center;display:none}
+    .login-error.visible{display:block}
+    header{background:linear-gradient(180deg,#0c160a,#111);border-bottom:1px solid #1a2810;position:sticky;top:0;z-index:100;box-shadow:0 2px 30px rgba(0,0,0,.7)}
+    .header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:.9rem;padding:.6rem 1rem}
+    .hdr-logo{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--green);box-shadow:0 0 14px var(--green-glow)}
+    .hdr-logo img{width:100%;height:100%;object-fit:cover;display:block}
+    .hdr-title{flex:1}
+    .hdr-brand-row{display:flex;align-items:center;gap:.5rem}
+    .hdr-brand{font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:.1em;color:var(--green);text-transform:uppercase;line-height:1}
+    .hdr-pill{font-family:'Rajdhani',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;background:rgba(139,195,74,.12);color:var(--green);border:1px solid rgba(139,195,74,.25);border-radius:4px;padding:.12rem .45rem}
+    .hdr-sub{font-size:.6rem;color:var(--text-muted);letter-spacing:.18em;text-transform:uppercase;margin-top:.1rem}
+    .offline-badge{font-size:.58rem;font-weight:700;letter-spacing:.1em;padding:.25rem .55rem;border-radius:20px;text-transform:uppercase;border:1px solid;transition:all .3s}
+    .offline-badge.online{background:rgba(139,195,74,.1);color:var(--green);border-color:#2a4a10}
+    .offline-badge.offline{background:rgba(229,57,53,.1);color:var(--red);border-color:var(--red)}
+    #offline-banner{display:none;background:linear-gradient(90deg,#1a0000,#2a0000);border-bottom:1px solid var(--red);text-align:center;padding:.5rem 1rem;font-size:.75rem;color:#ff8a80}
+    main{max-width:640px;margin:0 auto;padding:1.2rem 1rem 0}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:.9rem;overflow:hidden}
+    .card-header{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;background:var(--surface2);border-bottom:1px solid var(--border)}
+    .card-icon{width:27px;height:27px;background:var(--green-dim);border:1px solid var(--green-dark);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+    .card-header h2{font-family:'Rajdhani',sans-serif;font-size:.83rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+    .card-body{padding:.85rem 1rem}
+    .card-body>*+*{margin-top:.7rem}
+    .field{display:flex;flex-direction:column;gap:.28rem}
+    .field label{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+    .field input,.field select,.field textarea{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+    .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;padding-right:2rem}
+    .field textarea{resize:vertical;min-height:78px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+    .divider{height:1px;background:var(--border);margin:.72rem 0}
+    .req-star{color:var(--red)}
+    #gps-btn{width:100%;padding:.58rem .75rem;background:var(--green-dim);border:1px solid var(--green-dark);border-radius:var(--radius);color:var(--green);font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:background .2s}
+    #gps-btn:active{background:rgba(139,195,74,.2)}
+    #gps-coords{font-size:.71rem;color:var(--text-dim);background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius);padding:.42rem .7rem;margin-top:.4rem;font-family:monospace;display:none}
+    #gps-coords.visible{display:block}
+    .timing-badge{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);padding:.5rem .75rem;font-size:.78rem;display:flex;align-items:center;gap:.4rem;color:var(--text-dim)}
+    .timing-badge strong{color:var(--green);font-family:'Rajdhani',sans-serif;font-size:1rem}
+    .timing-badge .label{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em}
+    .error-msg{font-size:.7rem;color:var(--red);display:none;padding:.3rem .6rem;background:rgba(229,57,53,.08);border-radius:var(--radius);border-left:2px solid var(--red)}
+    .error-msg.visible{display:block}
+    .toggle-avancado{font-size:.72rem;color:var(--amber);background:rgba(255,160,0,.06);border:1px solid rgba(255,160,0,.22);border-radius:var(--radius);padding:.4rem .75rem;cursor:pointer;width:100%;text-align:center;font-weight:600;letter-spacing:.05em;display:none}
+    .toggle-avancado.visible{display:block}
+    .hr-avancado-row{display:none;flex-direction:column;gap:.3rem}
+    .hr-avancado-row.visible{display:flex}
+    .hr-avancado-row label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+    .hr-avancado-row input{background:var(--surface3);border:1px solid rgba(255,160,0,.4);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%}
+    .hr-avancado-row input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,160,0,.1)}
+    .chip-group{display:flex;flex-wrap:wrap;gap:.45rem}
+    .chip{padding:.42rem .8rem;border-radius:20px;border:1px solid var(--border-hi);background:var(--surface3);color:var(--text-dim);font-size:.73rem;font-weight:600;letter-spacing:.06em;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent}
+    .chip.active{background:var(--green-dim);border-color:var(--green);color:var(--green);box-shadow:0 0 8px var(--green-glow)}
+    .chip:active{opacity:.75}
+    .causa-list{display:flex;flex-direction:column;gap:.38rem}
+    .causa-grid{display:grid;grid-template-columns:1fr 1fr;gap:.38rem}
+    @media(max-width:400px){.causa-grid{grid-template-columns:1fr}}
+    .causa-item{display:flex;align-items:center;gap:.6rem;padding:.52rem .75rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);cursor:pointer;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent}
+    .causa-item.active{background:var(--green-dim);border-color:var(--green)}
+    .causa-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-hi);flex-shrink:0;transition:all .18s}
+    .causa-item.active .causa-dot{background:var(--green);border-color:var(--green);box-shadow:0 0 6px var(--green-glow)}
+    .causa-item span{font-size:.78rem;color:var(--text-dim);line-height:1.3}
+    .causa-item.active span{color:var(--text)}
+    .toggle-row{display:flex;gap:.5rem}
+    .toggle-btn{flex:1;padding:.52rem;border-radius:var(--radius);border:1px solid var(--border-hi);background:var(--surface3);color:var(--text-dim);font-size:.78rem;font-weight:600;cursor:pointer;text-align:center;transition:all .18s;-webkit-tap-highlight-color:transparent}
+    .toggle-btn.active-yes{background:rgba(139,195,74,.12);border-color:var(--green);color:var(--green)}
+    .toggle-btn.active-no{background:rgba(229,57,53,.08);border-color:var(--red);color:var(--red)}
+    .material-row{display:grid;grid-template-columns:1fr 72px 34px;gap:.4rem;align-items:center;margin-top:.5rem}
+    .material-row select,.material-row input[type="text"]{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;padding:.48rem .6rem;width:100%;-webkit-appearance:none;appearance:none}
+    .material-row select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.5rem}
+    .material-row input[type="number"]{background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;padding:.48rem .5rem}
+    .material-row select:focus,.material-row input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px var(--green-dim)}
+    .btn-remove{width:34px;height:34px;border-radius:var(--radius);background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);color:var(--red);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s}
+    .btn-remove:active{background:rgba(229,57,53,.2)}
+    .btn-add-material{margin-top:.5rem;width:100%;padding:.5rem;background:transparent;border:1px dashed var(--border-hi);border-radius:var(--radius);color:var(--text-dim);font-size:.76rem;font-weight:500;cursor:pointer;transition:border-color .2s,color .2s;letter-spacing:.05em}
+    .btn-add-material:hover{border-color:var(--green-dark);color:var(--green)}
+    #material-section{display:none}
+    #material-section.visible{display:block}
+    /* CEO */
+    #ceo-section{display:none}
+    .ceo-options{display:flex;flex-direction:column;gap:.45rem}
+    .ceo-opt{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);cursor:pointer;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent;user-select:none}
+    .ceo-opt.active{background:var(--green-dim);border-color:var(--green)}
+    .ceo-box{width:22px;height:22px;border-radius:5px;border:2px solid var(--border-hi);background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .18s}
+    .ceo-opt.active .ceo-box{background:var(--green-dim);border-color:var(--green);box-shadow:0 0 6px var(--green-glow)}
+    .ceo-check{width:12px;height:10px;opacity:0;transition:opacity .18s}
+    .ceo-opt.active .ceo-check{opacity:1}
+    .ceo-label-text{display:flex;flex-direction:column;gap:.1rem}
+    .ceo-title{font-size:.82rem;color:var(--text-dim);font-weight:600;line-height:1.2}
+    .ceo-opt.active .ceo-title{color:var(--green)}
+    .ceo-desc{font-size:.68rem;color:var(--text-muted);line-height:1.3}
+    .btn-copy{width:100%;padding:.9rem;background:linear-gradient(135deg,#5d8a1f,#8bc34a);border:none;border-radius:var(--radius-lg);color:#050505;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:opacity .2s;box-shadow:0 4px 22px rgba(139,195,74,.28);margin-top:1rem}
+    .btn-copy:active{opacity:.85}
+    #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--green-dark);border-radius:30px;padding:.6rem 1.2rem;font-size:.78rem;color:var(--green);box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    footer{max-width:640px;margin:1.5rem auto 0;padding:0 1rem;text-align:center;color:var(--text-muted);font-size:.62rem;letter-spacing:.08em}
+  </style>
+</head>
+<body>
+
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo-wrap"><img src="./logo.png" alt="Netturbo"/></div>
+    <div class="login-heading"><h2>Netturbo</h2><p>Sistema RFO · O&M</p></div>
+    <div class="login-field">
+      <label>Senha de Acesso</label>
+      <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="current-password"/>
+    </div>
+    <div class="login-error" id="login-erro">❌ Senha incorreta.</div>
+    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
+<div id="offline-banner">⚠️ SEM CONEXÃO — Dados salvos localmente</div>
+
+<header>
+  <div class="header-inner">
+    <div class="hdr-logo"><img src="./logo.png" alt="Netturbo"/></div>
+    <div class="hdr-title">
+      <div class="hdr-brand-row"><span class="hdr-brand">Netturbo</span><span class="hdr-pill">RFO</span></div>
+      <div class="hdr-sub">Operação &amp; Manutenção</div>
+    </div>
+    <div id="conn-status" class="offline-badge online">ONLINE</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="card-header"><div class="card-icon">📋</div><h2>Identificação</h2></div>
+    <div class="card-body">
+      <div class="field"><label>Empresa Prestadora</label>
+        <select id="empresa" onchange="atualizarTecnicos()">
+          <option value="">Selecione...</option>
+          <option value="OLIVEIRA">OLIVEIRA</option>
+          <option value="VAL">VAL</option>
+          <option value="PV">PV</option>
+          <option value="SOLUTEC">SOLUTEC</option>
+          <option value="QUALITY">QUALITY</option>
+          <option value="NETTURBO">NETTURBO</option>
+        </select>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Técnico</label>
+          <select id="tecnico">
+            <option value="">Selecione a empresa primeiro...</option>
+          </select>
+        </div>
+        <div class="field"><label>Data</label><input type="date" id="data"/></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><div class="card-icon">📍</div><h2>Localização e Protocolo</h2></div>
+    <div class="card-body">
+      <div class="grid2">
+        <div class="field"><label>Protocolo O&amp;M</label><input type="text" id="protocolo" placeholder="000000"/></div>
+        <div class="field"><label>Cidade</label><input type="text" id="cidade" placeholder="Ex: Sorocaba"/></div>
+        <div class="field"><label>ID</label><input type="text" id="id-etiqueta" placeholder="Ex: ID123"/></div>
+        <div class="field"><label>Cliente</label><input type="text" id="cliente" placeholder="Nome do Cliente"/></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field"><label>Endereço / Referência do Defeito</label><input type="text" id="local-defeito" placeholder="Rua, número, bairro..."/></div>
+      <button id="gps-btn" onclick="capturarGPS()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Capturar Coordenadas
+      </button>
+      <div id="gps-coords"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><div class="card-icon">⏱️</div><h2>Tempos e Prazos</h2></div>
+    <div class="card-body">
+      <div class="grid2">
+        <div class="field"><label>Início / Recebimento</label><input type="time" id="hr-inicio" onchange="calcTempos()"/></div>
+        <div class="field"><label>Término / Validação</label><input type="time" id="hr-termino" onchange="calcTempos()"/></div>
+      </div>
+      <button class="toggle-avancado" id="btn-toggle-avancado" onclick="toggleModoAvancado()">⏰ Manutenção ultrapassou 24h? Clique aqui</button>
+      <div class="hr-avancado-row" id="hr-avancado-row">
+        <label>Término Real (DD/MM HH:MM) <span class="req-star">*</span></label>
+        <input type="text" id="hr-termino-avancado" placeholder="Ex: 25/05 14:30" oninput="calcTemposAvancado()"/>
+        <div style="font-size:.67rem;color:var(--text-muted);margin-top:.15rem">Use quando ultrapassou a meia-noite ou 24h</div>
+      </div>
+      <div id="err-termino" class="error-msg">⚠️ Verifique os horários</div>
+      <div class="timing-badge">
+        <span class="label">SLA Total:</span>
+        <strong id="display-sla">00:00</strong>
+        <span id="sla-dias" style="font-size:.68rem;color:var(--text-muted);margin-left:.15rem"></span>
+      </div>
+      <div class="divider"></div>
+      <div class="field" style="width:50%"><label>Chegada no Local</label><input type="time" id="hr-chegada" onchange="calcTempos()"/></div>
+      <div id="err-chegada" class="error-msg">⚠️ Chegada inválida!</div>
+      <div class="timing-badge">
+        <span class="label">Tempo em Campo:</span>
+        <strong id="display-campo">00:00</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><div class="card-icon">⚠️</div><h2>Ocorrência e Causa</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>Tipo de Ocorrência</label>
+        <div class="chip-group" id="tipo-chips">
+          <div class="chip" data-val="ROMPIMENTO">ROMPIMENTO</div>
+          <div class="chip" data-val="MASSIVA">MASSIVA</div>
+          <div class="chip" data-val="ACOMPANHAMENTO CPFL">ACOMPANHAMENTO CPFL</div>
+          <div class="chip" data-val="PREVENTIVA">PREVENTIVA</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field">
+        <label id="lbl-causa">Causa Principal</label>
+        <div id="causa-container" class="causa-list">
+          <div style="font-size:.73rem;color:var(--text-muted);font-style:italic">Selecione o tipo de ocorrência...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><div class="card-icon">🔧</div><h2>Materiais Utilizados</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>Houve uso de material?</label>
+        <div class="toggle-row">
+          <div class="toggle-btn" id="btn-mat-sim" onclick="setMaterial(true)">✅ SIM</div>
+          <div class="toggle-btn" id="btn-mat-nao" onclick="setMaterial(false)">❌ NÃO</div>
+        </div>
+      </div>
+      <div id="material-section">
+        <div class="divider"></div>
+        <div id="mat-list"></div>
+        <button class="btn-add-material" onclick="addMaterialField()">+ Adicionar outro material</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><div class="card-icon">✅</div><h2>Fechamento</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>Solução Realizada <span class="req-star">*</span></label>
+        <textarea id="solucao" placeholder="O que foi feito para resolver..."></textarea>
+      </div>
+      <div id="ceo-section">
+        <div class="field">
+          <label>Tipo de CEO Utilizado <span class="req-star">*</span></label>
+          <div class="ceo-options">
+            <div class="ceo-opt" id="ceo-opt-nova" onclick="toggleCEO('nova')">
+              <div class="ceo-box"><svg class="ceo-check" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="ceo-label-text"><span class="ceo-title">Caixa Nova → Nova</span><span class="ceo-desc">Adicionadas 2 caixas novas na rede</span></div>
+            </div>
+            <div class="ceo-opt" id="ceo-opt-existente" onclick="toggleCEO('existente')">
+              <div class="ceo-box"><svg class="ceo-check" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="ceo-label-text"><span class="ceo-title">Caixa Nova → Existente</span><span class="ceo-desc">Adicionada 1 caixa nova para 1 caixa existente</span></div>
+            </div>
+            <div class="ceo-opt" id="ceo-opt-existente-existente" onclick="toggleCEO('existente-existente')">
+              <div class="ceo-box"><svg class="ceo-check" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4.5,9 11,1" stroke="#8bc34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="ceo-label-text"><span class="ceo-title">Caixa Existente → Existente</span><span class="ceo-desc">Cabo lançado entre 2 caixas já existentes na rede</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Melhoria na Rede <span class="req-star">*</span></label>
+        <textarea id="melhoria" placeholder="O que foi feito para melhorar..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <button class="btn-copy" onclick="gerarRelatorio()">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Enviar para Aprovação
+  </button>
+</main>
+<footer>Sistema de Manutenção Netturbo © 2026 · Modo Offline Suportado</footer>
+<div id="toast"></div>
+
+<script>
+const SENHA_HASH='1d6971f693cb40bcee4942b2937b8ab6b0e4f0c7d3ca7506b65793fcc48969bd';
+const SHEETS_URL='https://script.google.com/macros/s/AKfycbzYC4xExygpFSTdD60L3G5Ek05y4DwnEouA6LgWhTu5IdHPROQ2N3UmLVB2UdnGgn-d/exec';
+const MAT_FIBRA=['CABO 12F','CABO 4F','CABO 24F','CABO 72F','ALÇA VERMELHA','MINI FISC','PLAQUETA NTT','FIO DE ESPINAR','FISC 48FO','EMENDA DROP 12F (PASTEL)'];
+
+const TECH_MAP = {
+  "NETTURBO": ["Leonardo da Cruz Egidio","Weslley Rodrigues Pinto","Reginaldo Venâncio da Silva","Nicolas Lima de Almeida","Warley Aparecido de Paula","Marco Rodrigo dos Santos","Micael Oliveira dos Santos","Tiago Soares da Silva Calado"],
+  "OLIVEIRA": ["Evaneis Silva Oliveira"],
+  "PV": ["Petterson Valentim Barreto"],
+  "QUALITY": ["Jurandy Luis da Silva Filho","Guilherme dos Santos Reis","Wesley Henrique da Silva Rios"],
+  "SOLUTEC": ["Lielder Rogers Miranda","Marcio Aparecido Santiago"],
+  "VAL": ["Guilherme de Jesus Arruda","Djalma Aparecido Inocêncio","Marcos Mendes Merino","Altimayer de Araújo Lima","Robson Rodrigues Santos","Felipe Martins Santos Silva","Jonathan Henrique Honorato","Diego Eduardo de Souza Basso"]
+};
+
+function atualizarTecnicos(){
+  const empresa = document.getElementById('empresa').value;
+  const nomes = TECH_MAP[empresa] || [];
+  const sel = document.getElementById('tecnico');
+  sel.innerHTML = '<option value="">Selecione...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+window.atualizarTecnicos = atualizarTecnicos;
+
+const configCausas={
+  'ROMPIMENTO':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
+  'MASSIVA':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
+  'ACOMPANHAMENTO CPFL':[],
+  'PREVENTIVA':[]
+};
+
+let state={tipo:'',causa:'',usaMat:null,materiais:[],modoAvancado:false};
+let state_ceo='';
+
+async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function fazerLogin(){
+  const h=await sha256(document.getElementById('login-senha').value);
+  if(h===SENHA_HASH){sessionStorage.setItem('rfo_auth','1');document.getElementById('login-overlay').style.display='none';}
+  else{const e=document.getElementById('login-erro');e.classList.add('visible');document.getElementById('login-senha').value='';setTimeout(()=>e.classList.remove('visible'),3000);}
+}
+window.fazerLogin=fazerLogin;
+if(sessionStorage.getItem('rfo_auth')==='1')document.getElementById('login-overlay').style.display='none';
+
+function toggleModoAvancado(){
+  state.modoAvancado=!state.modoAvancado;
+  const row=document.getElementById('hr-avancado-row'),btn=document.getElementById('btn-toggle-avancado'),hFim=document.getElementById('hr-termino');
+  if(state.modoAvancado){row.classList.add('visible');btn.textContent='✕ Cancelar modo +24h';btn.style.cssText='background:rgba(229,57,53,.08);border-color:rgba(229,57,53,.3);color:var(--red)';hFim.disabled=true;hFim.style.opacity='.4';}
+  else{row.classList.remove('visible');btn.textContent='⏰ Manutenção ultrapassou 24h? Clique aqui';btn.style.cssText='';hFim.disabled=false;hFim.style.opacity='1';document.getElementById('hr-termino-avancado').value='';document.getElementById('display-sla').innerText='00:00';document.getElementById('sla-dias').innerText='';calcTempos();}
+  saveLocal();
+}
+window.toggleModoAvancado=toggleModoAvancado;
+
+function calcTemposAvancado(){
+  const val=document.getElementById('hr-termino-avancado').value.trim(),hIniVal=document.getElementById('hr-inicio').value;
+  if(!val||!hIniVal)return;
+  const m=val.match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);if(!m)return;
+  const now=new Date(),[hI,mI]=hIniVal.split(':').map(Number);
+  const dtI=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hI,mI,0);
+  const dtF=new Date(now.getFullYear(),parseInt(m[2])-1,parseInt(m[1]),parseInt(m[3]),parseInt(m[4]),0);
+  if(dtF<=dtI){document.getElementById('display-sla').innerText='??:??';return;}
+  const ms=dtF-dtI,diffH=Math.floor(ms/3600000),diffM=Math.floor((ms%3600000)/60000),dias=Math.floor(diffH/24);
+  document.getElementById('display-sla').innerText=String(diffH).padStart(2,'0')+':'+String(diffM).padStart(2,'0');
+  document.getElementById('sla-dias').innerText=dias>0?`(${dias}d ${diffH%24}h)`:'';
+
+  // Tempo em Campo no modo +24h: assume que a Chegada aconteceu no mesmo dia do Início
+  // (confirmado pelo Vinicius — se um dia a chegada puder acontecer no dia seguinte, essa
+  // suposição precisa mudar).
+  const cVal=document.getElementById('hr-chegada').value;
+  if(cVal){
+    const [hC,mC]=cVal.split(':').map(Number);
+    let dtC=new Date(dtI.getFullYear(),dtI.getMonth(),dtI.getDate(),hC,mC,0);
+    if(dtC<dtI) dtC=new Date(dtC.getTime()+86400000); // ex: início 23:50, chegada 00:10 -> chegada "virou o dia"
+    if(dtC>dtF){
+      document.getElementById('display-campo').innerText='00:00';
+    }else{
+      const msCampo=dtF-dtC,hCampo=Math.floor(msCampo/3600000),mCampo=Math.floor((msCampo%3600000)/60000);
+      document.getElementById('display-campo').innerText=String(hCampo).padStart(2,'0')+':'+String(mCampo).padStart(2,'0');
+    }
+  }else{
+    document.getElementById('display-campo').innerText='00:00';
+  }
+  saveLocal();
+}
+
+function getMins(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m}
+function fmtMins(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+function calcTempos(){
+  if(state.modoAvancado){calcTemposAvancado();return;}
+  const i=getMins(document.getElementById('hr-inicio').value),f=getMins(document.getElementById('hr-termino').value),c=getMins(document.getElementById('hr-chegada').value);
+  document.getElementById('sla-dias').innerText='';
+  if(i!==null&&f!==null){
+    if(f===i){document.getElementById('display-sla').innerText='24:00';document.getElementById('sla-dias').innerText='(1 dia completo)';}
+    else if(f<i){document.getElementById('display-sla').innerText=fmtMins((f+1440)-i);document.getElementById('sla-dias').innerText='(+1 dia)';}
+    else document.getElementById('display-sla').innerText=fmtMins(f-i);
+  }else document.getElementById('display-sla').innerText='00:00';
+  if(c!==null&&i!==null&&f!==null){
+    const fEff=(f<i)?f+1440:f,cEff=(c<i)?c+1440:c;
+    if(cEff<i||cEff>fEff){document.getElementById('err-chegada').classList.add('visible');document.getElementById('hr-chegada').value='';document.getElementById('display-campo').innerText='00:00';}
+    else document.getElementById('display-campo').innerText=fmtMins(fEff-cEff);
+  }else document.getElementById('display-campo').innerText='00:00';
+  saveLocal();
+}
+
+const tipoChips=document.querySelectorAll('#tipo-chips .chip');
+const causaCont=document.getElementById('causa-container');
+tipoChips.forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    tipoChips.forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');state.tipo=chip.dataset.val;state.causa='';
+    const btnAv=document.getElementById('btn-toggle-avancado');
+    if(state.tipo==='MASSIVA')btnAv.classList.add('visible');
+    else{btnAv.classList.remove('visible');if(state.modoAvancado)toggleModoAvancado();}
+    renderCausas();atualizarCEO();
+    if(state.usaMat){state.materiais=[];renderMateriais();}
+    saveLocal();
+  });
+});
+
+function renderCausas(){
+  causaCont.innerHTML='';
+  if(state.tipo==='ACOMPANHAMENTO CPFL'){
+    const wrapper=document.createElement('div');wrapper.style.cssText='display:flex;flex-direction:column;gap:.5rem';
+    const lbl=document.createElement('div');lbl.style.cssText='font-size:.68rem;color:var(--text-muted);font-style:italic';lbl.innerText='Informe o número da notificação CPFL:';
+    const inp=document.createElement('input');inp.type='text';inp.placeholder='Nº da Notificação CPFL...';inp.value=state.causa||'';
+    inp.style.cssText='background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:Inter,sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s';
+    inp.oninput=function(){state.causa=this.value;saveLocal();};
+    inp.onfocus=function(){this.style.borderColor='var(--green)';this.style.boxShadow='0 0 0 3px var(--green-dim)';};
+    inp.onblur=function(){this.style.borderColor='';this.style.boxShadow='';};
+    wrapper.appendChild(lbl);wrapper.appendChild(inp);causaCont.appendChild(wrapper);return;
+  }
+  if(state.tipo==='PREVENTIVA'){
+    const inp=document.createElement('input');inp.type='text';inp.placeholder='Descreva a causa / motivo...';inp.value=state.causa||'';
+    inp.style.cssText='background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);color:var(--text);font-family:Inter,sans-serif;font-size:.875rem;padding:.52rem .75rem;width:100%;transition:border-color .2s';
+    inp.oninput=function(){state.causa=this.value;saveLocal();};
+    inp.onfocus=function(){this.style.borderColor='var(--green)';this.style.boxShadow='0 0 0 3px var(--green-dim)';};
+    inp.onblur=function(){this.style.borderColor='';this.style.boxShadow='';};
+    causaCont.appendChild(inp);return;
+  }
+  const lblCausa=document.getElementById('lbl-causa');
+  if(lblCausa){
+    if(state.tipo==='ACOMPANHAMENTO CPFL') lblCausa.textContent='Nº da Notificação';
+    else lblCausa.textContent='Causa Principal';
+  }
+  const lista=configCausas[state.tipo]||[];
+  if(!lista.length){causaCont.innerHTML='<div style="font-size:.73rem;color:var(--text-muted);font-style:italic">Selecione o tipo de ocorrência...</div>';return;}
+  const wrap=document.createElement('div');wrap.className='causa-grid';
+  lista.forEach(c=>{
+    const item=document.createElement('div');item.className='causa-item'+(state.causa===c?' active':'');
+    item.innerHTML='<div class="causa-dot"></div><span>'+c+'</span>';
+    item.onclick=()=>{Array.from(wrap.children).forEach(ch=>ch.classList.remove('active'));item.classList.add('active');state.causa=c;saveLocal();};
+    wrap.appendChild(item);
+  });
+  causaCont.appendChild(wrap);
+}
+
+function atualizarCEO(){
+  const sec=document.getElementById('ceo-section');
+  const isFibra=state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA';
+  sec.style.display=isFibra?'block':'none';
+  if(!isFibra){state_ceo='';['nova','existente','existente-existente'].forEach(t=>{const el=document.getElementById('ceo-opt-'+t);if(el)el.classList.remove('active');});}
+}
+window.toggleCEO=function(tipo){
+  state_ceo=(state_ceo===tipo)?'':tipo;
+  ['nova','existente','existente-existente'].forEach(t=>document.getElementById('ceo-opt-'+t).classList.toggle('active',state_ceo===t));
+  saveLocal();
+};
+
+const matList=document.getElementById('mat-list'),matSec=document.getElementById('material-section');
+function setMaterial(sim){
+  state.usaMat=sim;
+  document.getElementById('btn-mat-sim').classList.toggle('active-yes',sim);
+  document.getElementById('btn-mat-nao').classList.toggle('active-no',!sim);
+  if(sim){matSec.classList.add('visible');if(state.materiais.length===0){MAT_FIBRA.forEach(m=>state.materiais.push({n:m,q:'',livre:false}));renderMateriais();}}
+  else matSec.classList.remove('visible');
+  saveLocal();
+}
+window.setMaterial=setMaterial;
+function renderMateriais(){
+  matList.innerHTML='';
+  state.materiais.forEach((mat,idx)=>{
+    const row=document.createElement('div');row.className='material-row';
+    if(mat.livre){
+      row.innerHTML='<input type="text" placeholder="Material" value="'+escH(mat.n)+'" oninput="updateMat('+idx+',\'n\',this.value)"/><input type="number" placeholder="Qtd" value="'+escH(mat.q)+'" min="1" oninput="updateMat('+idx+',\'q\',this.value)"/><button class="btn-remove" onclick="removeMat('+idx+')">✕</button>';
+    }else{
+      const opts=MAT_FIBRA.map(o=>'<option value="'+o+'" '+(mat.n===o?'selected':'')+'>'+o+'</option>').join('');
+      row.innerHTML='<select onchange="updateMat('+idx+',\'n\',this.value)"><option value="" '+(mat.n?'':'selected')+'>Selecione...</option>'+opts+'</select><input type="number" placeholder="Qtd" value="'+escH(mat.q)+'" min="1" oninput="updateMat('+idx+',\'q\',this.value)"/><button class="btn-remove" onclick="removeMat('+idx+')">✕</button>';
+    }
+    matList.appendChild(row);
+  });
+}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}
+window.addMaterialField=function(){state.materiais.push({n:'',q:'',livre:true});renderMateriais();saveLocal();};
+window.updateMat=function(idx,f,v){state.materiais[idx][f]=v;saveLocal();};
+window.removeMat=function(idx){state.materiais.splice(idx,1);renderMateriais();saveLocal();};
+
+function capturarGPS(){
+  const btn=document.getElementById('gps-btn'),d=document.getElementById('gps-coords');
+  if(!navigator.geolocation){d.innerText='GPS não suportado.';d.classList.add('visible');return;}
+  btn.innerHTML='Buscando...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude.toFixed(6),lon=pos.coords.longitude.toFixed(6);
+    d.innerText='Lat: '+lat+' | Lon: '+lon;d.dataset.link='https://maps.google.com/?q='+lat+','+lon;
+    d.classList.add('visible');btn.innerHTML='📍 GPS Capturado';btn.style.background='rgba(139,195,74,.15)';
+    try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon);const g=await r.json();if(g&&g.address){const c=g.address.city||g.address.town||g.address.village||'';if(c)document.getElementById('cidade').value=c;}}catch(e){}
+    saveLocal();
+  },()=>{d.innerText='Erro ao buscar GPS.';d.classList.add('visible');btn.innerHTML='Tentar Novamente';},{enableHighAccuracy:true,timeout:10000});
+}
+window.capturarGPS=capturarGPS;
+
+const INPUTS=['empresa','tecnico','data','protocolo','cidade','id-etiqueta','cliente','local-defeito','hr-inicio','hr-termino','hr-chegada','solucao','melhoria','hr-termino-avancado'];
+INPUTS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',saveLocal);});
+function saveLocal(){
+  const d={state,ceo:state_ceo,gps:document.getElementById('gps-coords').dataset.link||''};
+  INPUTS.forEach(id=>{const el=document.getElementById(id);if(el)d[id]=el.value;});
+  localStorage.setItem('rfo_draft',JSON.stringify(d));
+}
+function loadLocal(){
+  const draft=JSON.parse(localStorage.getItem('rfo_draft'));if(!draft)return;
+  INPUTS.forEach(id=>{const el=document.getElementById(id);if(el&&draft[id])el.value=draft[id];});
+  calcTempos();
+  if(draft.gps){const d=document.getElementById('gps-coords');d.dataset.link=draft.gps;d.innerText=draft.gps;d.classList.add('visible');document.getElementById('gps-btn').innerHTML='📍 GPS Capturado';}
+  if(draft.state){
+    state=draft.state;
+    if(state.tipo){tipoChips.forEach(c=>{if(c.dataset.val===state.tipo)c.classList.add('active');});renderCausas();atualizarCEO();if(state.tipo==='MASSIVA')document.getElementById('btn-toggle-avancado').classList.add('visible');}
+    if(state.usaMat!==null){setMaterial(state.usaMat);if(state.usaMat)renderMateriais();}
+    if(state.modoAvancado){document.getElementById('hr-avancado-row').classList.add('visible');document.getElementById('hr-termino').disabled=true;document.getElementById('hr-termino').style.opacity='.4';}
+  }
+  if(draft.ceo){state_ceo=draft.ceo;const elId='ceo-opt-'+state_ceo;const el=document.getElementById(elId);if(el)el.classList.add('active');}
+}
+
+function gerarRelatorio(){
+  if(!state.tipo){showToast('⚠️ Selecione o Tipo de Ocorrência!');return;}
+  if(state.tipo!=='ACOMPANHAMENTO CPFL'&&state.tipo!=='PREVENTIVA'&&!state.causa){showToast('⚠️ Selecione a Causa Principal!');return;}
+  const v=id=>document.getElementById(id).value.trim();
+  if(!v('solucao')){showToast('⚠️ Preencha a Solução Realizada!');document.getElementById('solucao').focus();return;}
+  const isFibra=state.tipo==='ROMPIMENTO'||state.tipo==='MASSIVA';
+  if(isFibra&&!state_ceo){showToast('⚠️ Selecione o Tipo de CEO!');document.getElementById('ceo-section').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  if(!v('melhoria')){showToast('⚠️ Preencha a Melhoria na Rede!');document.getElementById('melhoria').focus();return;}
+
+  const dSlaV=document.getElementById('display-sla').innerText;
+  const dCmpV=document.getElementById('display-campo').innerText;
+  const gpsLink=document.getElementById('gps-coords').dataset.link||'';
+  const hrTermino=state.modoAvancado?v('hr-termino-avancado'):v('hr-termino');
+  let strMat='Não houve';
+  if(state.usaMat){const list=state.materiais.filter(m=>m.n&&m.q).map(m=>'• '+m.n+' - '+m.q);if(list.length)strMat=list.join('\n');}
+  const ceoLabel=state_ceo==='nova'?'☑ Caixa Nova → Nova (2 novas)':state_ceo==='existente'?'☑ Caixa Nova → Existente':state_ceo==='existente-existente'?'☑ Caixa Existente → Existente':'';
+
+  const payload={
+    timestamp:new Date().toLocaleString('pt-BR'),empresa:v('empresa'),tecnico:v('tecnico'),data:v('data'),
+    protocolo:v('protocolo'),cidade:v('cidade'),id:v('id-etiqueta'),cliente:v('cliente'),
+    local_defeito:v('local-defeito'),gps_coords:gpsLink,hr_inicio:v('hr-inicio'),hr_termino:hrTermino,
+    sla_total:dSlaV,hr_chegada:v('hr-chegada'),tempo_campo:dCmpV,
+    ocorrencia:state.tipo,causa:state.causa,obs_extras:'',materiais:strMat,
+    solucao:v('solucao'),tipo_ceo:ceoLabel,melhoria:v('melhoria')
+  };
+  if(navigator.onLine){
+    fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+      .then(()=>showToast('⏳ RFO enviado! Aguardando aprovação da liderança.'))
+      .catch(()=>saveToQueue(payload));
+  }else{saveToQueue(payload);showToast('💾 Salvo offline — será enviado ao reconectar.');}
+
+  let t='*RFO - NETTURBO - O&M*\n\n';
+  t+='*IDENTIFICAÇÃO*\nEMPRESA: '+v('empresa')+'\nTÉCNICO: '+v('tecnico')+'\nDATA: '+v('data')+'\n\n';
+  t+='*LOCALIZAÇÃO*\nPROTOCOLO: '+v('protocolo')+'\nCIDADE: '+v('cidade')+'\nID: '+v('id-etiqueta')+'\nCLIENTE: '+v('cliente')+'\nDEFEITO: '+v('local-defeito')+'\n';
+  if(gpsLink)t+='GPS: '+gpsLink+'\n';
+  t+='\n*TEMPOS*\nINÍCIO: '+v('hr-inicio')+'\nTÉRMINO: '+hrTermino+'\nSLA TOTAL: '+dSlaV+'\nCHEGADA: '+v('hr-chegada')+'\nTEMPO EM CAMPO: '+dCmpV+'\n\n';
+  t+='*OCORRÊNCIA:* '+state.tipo+'\n';
+  if(state.causa)t+='*CAUSA PRINCIPAL:* '+state.causa+'\n';
+  t+='\n*MATERIAIS:*\n'+strMat+'\n\n';
+  t+='*SOLUÇÃO:*\n'+v('solucao')+'\n';
+  if(ceoLabel)t+='*CEO:* '+ceoLabel+'\n';
+  t+='\n*MELHORIA NA REDE:*\n'+v('melhoria');
+
+  const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);
+  showToast('📋 Relatório copiado!');
+  localStorage.removeItem('rfo_draft');
+}
+window.gerarRelatorio=gerarRelatorio;
+
+function saveToQueue(p){const q=JSON.parse(localStorage.getItem('rfo_queue')||'[]');q.push(p);localStorage.setItem('rfo_queue',JSON.stringify(q));}
+function updateConnStatus(){
+  const b=document.getElementById('conn-status'),bn=document.getElementById('offline-banner');
+  if(navigator.onLine){b.className='offline-badge online';b.innerText='ONLINE';bn.style.display='none';}
+  else{b.className='offline-badge offline';b.innerText='OFFLINE';bn.style.display='block';}
+}
+window.addEventListener('online',updateConnStatus);window.addEventListener('offline',updateConnStatus);updateConnStatus();
+window.addEventListener('online',()=>{
+  updateConnStatus();
+  const q=JSON.parse(localStorage.getItem('rfo_queue')||'[]');if(!q.length)return;
+  const p=[...q];localStorage.removeItem('rfo_queue');
+  p.forEach(pl=>fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(pl)}).catch(()=>{const q2=JSON.parse(localStorage.getItem('rfo_queue')||'[]');q2.push(pl);localStorage.setItem('rfo_queue',JSON.stringify(q2));}));
+  showToast('📤 '+p.length+' registro(s) reenviado(s)');
+});
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+(function(){document.getElementById('data').value=new Date().toISOString().split('T')[0];})();
+window.addEventListener('DOMContentLoaded',loadLocal);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
