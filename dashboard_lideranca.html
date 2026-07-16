@@ -136,6 +136,7 @@
         <div class="t2">Dashboard de Ocorrências</div>
       </div>
       <div class="spacer"></div>
+      <button id="btnRefresh" onclick="loadData()" style="background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--sans);font-size:11px;padding:7px 12px;border-radius:8px;cursor:pointer;margin-right:10px">↻ Atualizar</button>
       <div id="lastSync">carregando...</div>
     </header>
 
@@ -227,6 +228,9 @@ function tryLogin(){
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     loadData();
+    if(!window._dashAutoRefresh){
+      window._dashAutoRefresh = setInterval(loadData, 30000); // atualiza sozinho a cada 30s
+    }
   } else {
     document.getElementById('gateError').textContent = '❌ Senha incorreta.';
   }
@@ -401,8 +405,10 @@ function renderTable(rows){
       <td>${r.empresa}</td>
       <td>${r.tecnico}</td>
       <td>${r.protocolo}</td>
+      <td>${r.id}</td>
       <td>${r.cidade}</td>
       <td>${r.tipo}</td>
+      <td>${r.dataAtividade}</td>
       <td>${r.hrInicio}</td>
       <td>${r.hrChegada}</td>
       <td>${r.hrTermino}</td>
