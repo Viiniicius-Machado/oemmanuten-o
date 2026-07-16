@@ -176,6 +176,18 @@
       </div>
     </div>
 
+    <!-- RANKINGS POR EMPRESA -->
+    <div class="kpis" style="grid-template-columns:1fr 1fr;">
+      <div class="card">
+        <div class="label">Ranking · Empresas (Volume de Atividades)</div>
+        <div id="rankEmpresaVolume"><div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div></div>
+      </div>
+      <div class="card">
+        <div class="label">Ranking · Empresas (% Dentro do SLA)</div>
+        <div id="rankEmpresaSla"><div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div></div>
+      </div>
+    </div>
+
     <!-- FILTROS -->
     <div class="filters">
       <select id="fEmpresa"><option value="">Empresa (todas)</option></select>
@@ -343,6 +355,7 @@ function render(){
   const rows = filtered();
   renderKpis(rows);
   renderRanking(rows);
+  renderRankingEmpresas(rows);
   renderTypes(rows);
   renderTable(rows);
 }
@@ -377,6 +390,43 @@ function renderRanking(rows){
     .slice(0,6);
   const el = document.getElementById('rankList');
   el.innerHTML = ranked.length ? ranked.map((r,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-name">${r.nome}</div>
+      <div class="rank-pct" style="color:${r.pct>=80?'#22c1a0':r.pct>=60?'#e8a33d':'#e6484f'}">${r.pct}%</div>
+    </div>`).join('') : '<div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div>';
+}
+
+function renderRankingEmpresas(rows){
+  // Volume: quantas RFOs cada empresa tem, do maior pro menor
+  const volume = {};
+  rows.forEach(r=> volume[r.empresa] = (volume[r.empresa]||0) + 1);
+  const rankedVolume = Object.entries(volume)
+    .map(([nome,total])=>({nome, total}))
+    .sort((a,b)=> b.total - a.total)
+    .slice(0,8);
+  const elVol = document.getElementById('rankEmpresaVolume');
+  elVol.innerHTML = rankedVolume.length ? rankedVolume.map((r,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-name">${r.nome}</div>
+      <div class="rank-pct">${r.total}</div>
+    </div>`).join('') : '<div class="rank-item"><div class="rank-name" style="color:var(--muted)">sem dados</div></div>';
+
+  // % dentro do SLA por empresa (só conta quem tem SLA reconhecido, igual o ranking de técnico)
+  const bySla = {};
+  rows.forEach(r=>{
+    if(r.slaOk === null) return;
+    bySla[r.empresa] = bySla[r.empresa] || {total:0, ok:0};
+    bySla[r.empresa].total++;
+    if(r.slaOk) bySla[r.empresa].ok++;
+  });
+  const rankedSla = Object.entries(bySla)
+    .map(([nome,v])=>({nome, pct: v.total ? Math.round(v.ok/v.total*100) : 0, total:v.total}))
+    .sort((a,b)=> b.pct - a.pct)
+    .slice(0,8);
+  const elSla = document.getElementById('rankEmpresaSla');
+  elSla.innerHTML = rankedSla.length ? rankedSla.map((r,i)=>`
     <div class="rank-item">
       <div class="rank-pos">${i+1}</div>
       <div class="rank-name">${r.nome}</div>
