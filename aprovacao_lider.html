@@ -79,6 +79,19 @@
     .pendente-tipo{font-size:.65rem;font-weight:700;letter-spacing:.08em;padding:.2rem .55rem;border-radius:20px;background:rgba(255,109,0,.15);color:var(--amber);border:1px solid rgba(255,109,0,.3)}
     .badge-pendente{font-size:.6rem;font-weight:700;background:var(--amber);color:#111;padding:.2rem .55rem;border-radius:20px;letter-spacing:.05em}
 
+    /* TIPO / CAUSA (chips, mesma ideia do formulário do técnico) */
+    .chip-group{display:flex;flex-wrap:wrap;gap:.45rem}
+    .chip{padding:.42rem .8rem;border-radius:20px;border:1px solid var(--border-hi);background:var(--surface3);color:var(--text-dim);font-size:.73rem;font-weight:600;letter-spacing:.06em;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent}
+    .chip.active{background:rgba(212,168,67,.12);border-color:var(--gold);color:var(--gold)}
+    .causa-grid{display:grid;grid-template-columns:1fr 1fr;gap:.38rem;margin-top:.6rem}
+    @media(max-width:400px){.causa-grid{grid-template-columns:1fr}}
+    .causa-item{display:flex;align-items:center;gap:.6rem;padding:.52rem .75rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius);cursor:pointer;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent}
+    .causa-item.active{background:rgba(212,168,67,.12);border-color:var(--gold)}
+    .causa-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-hi);flex-shrink:0;transition:all .18s}
+    .causa-item.active .causa-dot{background:var(--gold);border-color:var(--gold)}
+    .causa-item span{font-size:.78rem;color:var(--text-dim);line-height:1.3}
+    .causa-item.active span{color:var(--text)}
+
     /* CAMPO REVISÃO */
     .rfo-field-row{display:flex;flex-direction:column;gap:.22rem;padding:.55rem .75rem;background:var(--surface3);border:1px solid var(--border-hi);border-radius:var(--radius)}
     .rfo-field-lbl{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
@@ -387,11 +400,7 @@ function abrirRevisao(idx){
     {lbl:'GPS',           key:'gps', readonly:true},
   ]);
   renderTemposRevisao();
-  renderCampos('rev-ocorrencia',[
-    {lbl:'Tipo de Ocorrência', key:'ocorrencia'},
-    {lbl:'Causa Principal',    key:'causa'},
-    {lbl:'Detalhes / Obs',     key:'obs'},
-  ]);
+  renderOcorrenciaRevisao();
   renderCampos('rev-fechamento',[
     {lbl:'Materiais Utilizados', key:'materiais', textarea:true},
     {lbl:'Solução Realizada',    key:'solucao',   textarea:true},
@@ -429,6 +438,93 @@ window.onEdit = function(key, val){
   const badge = document.getElementById('badge-'+key);
   if(badge) badge.style.display = val !== (rfoAtual[key]||'') ? 'inline' : 'none';
 };
+
+// ── OCORRÊNCIA / CAUSA: chips clicáveis, mesma ideia do técnico ─
+const CONFIG_CAUSAS = {
+  'ROMPIMENTO':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
+  'MASSIVA':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
+  'ACOMPANHAMENTO CPFL':[],
+  'PREVENTIVA':[]
+};
+
+function renderOcorrenciaRevisao(){
+  const el = document.getElementById('rev-ocorrencia');
+  const tipoAtual = dadosEditados.ocorrencia || '';
+  const tipos = ['ROMPIMENTO','MASSIVA','ACOMPANHAMENTO CPFL','PREVENTIVA'];
+
+  el.innerHTML = `
+    <div class="field">
+      <label>Tipo de Ocorrência</label>
+      <div class="chip-group" id="lider-tipo-chips">
+        ${tipos.map(t=>`<div class="chip${t===tipoAtual?' active':''}" data-val="${htmlEsc(t)}">${htmlEsc(t)}</div>`).join('')}
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <label>Causa Principal <span class="edited-badge" id="badge-causa" style="display:none">✏️ Editado</span></label>
+      <div id="lider-causa-container"></div>
+    </div>
+    <div class="field" style="margin-top:.7rem">
+      <label>Detalhes / Obs <span class="edited-badge" id="badge-obs" style="display:none">✏️ Editado</span></label>
+      <textarea class="rfo-field-edit" style="min-height:60px" oninput="onEdit('obs',this.value)">${htmlEsc(dadosEditados.obs||'')}</textarea>
+    </div>
+  `;
+
+  document.querySelectorAll('#lider-tipo-chips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#lider-tipo-chips .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      dadosEditados.ocorrencia = chip.dataset.val;
+      marcarEditadoCampo('ocorrencia');
+      dadosEditados.causa = ''; // reseta causa ao trocar tipo, igual o formulário do técnico
+      renderCausaLider();
+    });
+  });
+
+  renderCausaLider();
+}
+
+function renderCausaLider(){
+  const cont = document.getElementById('lider-causa-container');
+  const tipo = dadosEditados.ocorrencia;
+
+  if(tipo === 'ACOMPANHAMENTO CPFL'){
+    cont.innerHTML = `<input type="text" class="rfo-field-edit" placeholder="Nº da Notificação CPFL..." value="${htmlEsc(dadosEditados.causa||'')}" oninput="onEditCausa(this.value)"/>`;
+    return;
+  }
+  if(tipo === 'PREVENTIVA'){
+    cont.innerHTML = `<input type="text" class="rfo-field-edit" placeholder="Descreva a causa / motivo..." value="${htmlEsc(dadosEditados.causa||'')}" oninput="onEditCausa(this.value)"/>`;
+    return;
+  }
+  const lista = CONFIG_CAUSAS[tipo] || [];
+  if(!lista.length){
+    cont.innerHTML = '<div style="font-size:.73rem;color:var(--text-muted);font-style:italic">Selecione o tipo de ocorrência...</div>';
+    return;
+  }
+  cont.innerHTML = `<div class="causa-grid">${lista.map(c=>`
+    <div class="causa-item${dadosEditados.causa===c?' active':''}" data-val="${htmlEsc(c)}">
+      <div class="causa-dot"></div><span>${htmlEsc(c)}</span>
+    </div>`).join('')}</div>`;
+
+  cont.querySelectorAll('.causa-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      cont.querySelectorAll('.causa-item').forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+      onEditCausa(item.dataset.val);
+    });
+  });
+}
+
+function onEditCausa(val){
+  dadosEditados.causa = val;
+  marcarEditadoCampo('causa');
+}
+window.onEditCausa = onEditCausa;
+
+function marcarEditadoCampo(key){
+  const badge = document.getElementById('badge-'+key);
+  if(badge) badge.style.display = (dadosEditados[key] !== (rfoAtual[key]||'')) ? 'inline' : 'none';
+}
 
 // ── TEMPOS: mesma lógica de cálculo do formulário do técnico ────
 function renderTemposRevisao(){
