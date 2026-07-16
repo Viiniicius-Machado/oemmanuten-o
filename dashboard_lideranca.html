@@ -195,8 +195,8 @@
       <table>
         <thead>
           <tr>
-            <th>Empresa</th><th>Técnico</th><th>Protocolo</th><th>Cidade</th><th>Tipo</th>
-            <th>Início</th><th>Chegada</th><th>Término</th>
+            <th>Empresa</th><th>Técnico</th><th>Protocolo</th><th>ID</th><th>Cidade</th><th>Tipo</th>
+            <th>Data</th><th>Início</th><th>Chegada</th><th>Término</th>
             <th>MTTR</th><th>MTTD (campo)</th><th>Status SLA</th>
           </tr>
         </thead>
@@ -235,7 +235,7 @@ function tryLogin(){
 async function loadData(){
   document.getElementById('lastSync').textContent = 'sincronizando...';
   try{
-    const res = await fetch(APPS_SCRIPT_URL);
+    const res = await fetch(APPS_SCRIPT_URL + '?aba=LISTAR_RFO');
     const raw = await res.json();
     RECORDS = raw.map(normalize);
   }catch(e){
@@ -266,6 +266,8 @@ function normalize(r){
     empresa: r.empresa || '—',
     tecnico: r.tecnico || '—',
     protocolo: r.protocolo || '—',
+    id: r.id || '—',
+    dataAtividade: r.data || '—',
     cidade: r.cidade || '—',
     cliente: r.cliente || '—',
     tipo: r.tipo || '—',
@@ -448,4 +450,3 @@ function demoData(){
 </script>
 </body>
 </html>
-
