@@ -444,13 +444,14 @@ const CONFIG_CAUSAS = {
   'ROMPIMENTO':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
   'MASSIVA':['Rompimento Troca de Poste','Rompimento Carga Alta','Rompimento Vandalismo','Rompimento Acidente em Via','Rompimento Queimadas','Rompimento Parcial','Rompimento Descarga Elétrica','Rompimento Poda Árvore','Rompimento Subterrâneo','Degradação Rede Externa','Degradação Rede Externa (Atenuação)','Visita Cliente (Rompimento Interno)','Improdutiva Chamado Improcedente','Improdutiva Cliente','Improdutiva Clima / Fator Externo','Improdutiva Comercial','Improdutiva Delivery','Improdutiva Documentação (APR/NR)','Improdutiva Documentação (ART/DWG)','Improdutiva Infraestrutura (Rede)','Improdutiva Last Mile','Improdutiva Logística','Improdutiva NOC','Improdutiva OEM','Improdutiva Terceiro (DER/Cia Elétrica)','Improdutiva Validação','🐛 Insetos'],
   'ACOMPANHAMENTO CPFL':[],
-  'PREVENTIVA':[]
+  'PREVENTIVA':[],
+  'AGENDAMENTO':['SEM ACESSO','GTD','TRANSMISSÃO']
 };
 
 function renderOcorrenciaRevisao(){
   const el = document.getElementById('rev-ocorrencia');
   const tipoAtual = dadosEditados.ocorrencia || '';
-  const tipos = ['ROMPIMENTO','MASSIVA','ACOMPANHAMENTO CPFL','PREVENTIVA'];
+  const tipos = ['ROMPIMENTO','MASSIVA','ACOMPANHAMENTO CPFL','PREVENTIVA','AGENDAMENTO'];
 
   el.innerHTML = `
     <div class="field">
